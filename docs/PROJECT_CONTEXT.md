@@ -287,19 +287,31 @@ Essa URL depende do IP da maquina e pode mudar.
 
 ## Configuracoes importantes
 
-`config/settings.py` atualmente tem:
+`config/settings.py` atualmente le configuracoes sensiveis por variaveis de ambiente:
 
-- `DEBUG = True`
-- `ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.15.23']`
+- `DJANGO_SECRET_KEY`
+- `DJANGO_DEBUG`
+- `DJANGO_ALLOWED_HOSTS`
+- `DJANGO_CSRF_TRUSTED_ORIGINS`
+
+Defaults locais:
+
+- `DJANGO_DEBUG` fica `True` quando ausente.
+- `DJANGO_ALLOWED_HOSTS` aceita `127.0.0.1`, `localhost` e `192.168.15.23`.
+- `STATIC_ROOT = BASE_DIR / 'staticfiles'`.
+
+Tambem tem:
+
 - `AUTH_PASSWORD_VALIDATORS = []`
 - `LANGUAGE_CODE = 'pt-br'`
 - `TIME_ZONE = 'America/Sao_Paulo'`
 
 Antes de colocar online de verdade, ajustar:
 
-- `DEBUG = False`
-- `SECRET_KEY` por variavel de ambiente
-- `ALLOWED_HOSTS` com dominio/IP real
+- `DJANGO_DEBUG=False`
+- `DJANGO_SECRET_KEY` forte e exclusivo
+- `DJANGO_ALLOWED_HOSTS` com dominio/IP real
+- `DJANGO_CSRF_TRUSTED_ORIGINS` com `https://dominio`
 - banco de producao se nao for usar SQLite
 - arquivos estaticos com `collectstatic`
 - HTTPS/proxy reverso

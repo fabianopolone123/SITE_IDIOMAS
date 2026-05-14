@@ -82,3 +82,22 @@ Ao adicionar novos cards em `studies/alice_deck.py`, coloque sempre no final da 
 `ALICE_CARDS`. Nao reordene cards antigos. As chaves estaveis sao geradas pela posicao atual
 do baralho (`alice-0001`, `alice-0002`, etc.) e sao usadas para preservar progresso mesmo
 quando corrigimos texto, traducao ou explicacao.
+
+## Variaveis de ambiente para producao
+
+Veja `.env.example`.
+
+Obrigatorias/recomendadas na VPS:
+
+```bash
+DJANGO_SECRET_KEY=uma-chave-secreta-forte
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=seudominio.com,www.seudominio.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://seudominio.com,https://www.seudominio.com
+```
+
+Para arquivos estaticos:
+
+```bash
+python manage.py collectstatic
+```
