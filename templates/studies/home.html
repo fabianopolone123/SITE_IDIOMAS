@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Italiano com repeticao espacada{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <p class="eyebrow">Estudo guiado por revisoes</p>
+        <h1>Italiano com frases curtas de Alice.</h1>
+        <p class="lead">
+            Treine lembranca ativa, revise nos dias certos e deixe o sistema decidir
+            quando cada frase volta para evitar o esquecimento.
+        </p>
+        <div class="actions">
+            <a class="button primary" href="{% url 'register' %}">Criar conta</a>
+            <a class="button secondary" href="{% url 'login' %}">Ja tenho conta</a>
+        </div>
+    </div>
+    <div class="hero-panel" aria-label="Exemplo de cartao de estudo">
+        <span>Frase do dia</span>
+        <strong>Alice moriva di noia...</strong>
+        <p>Tente lembrar o sentido antes de revelar a dica.</p>
+    </div>
+</section>
+
+<section class="features">
+    <article>
+        <h2>Recuperacao ativa</h2>
+        <p>Primeiro voce tenta lembrar o significado e a estrutura. A resposta aparece depois.</p>
+    </article>
+    <article>
+        <h2>Intervalos crescentes</h2>
+        <p>Acertos empurram a revisao para o futuro. Erros trazem a frase de volta mais cedo.</p>
+    </article>
+    <article>
+        <h2>Contexto real</h2>
+        <p>As frases sao importadas do livro local e usadas como material interno de estudo.</p>
+    </article>
+</section>
+{% endblock %}

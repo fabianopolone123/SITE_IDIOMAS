@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="dashboard-head">
+    <div>
+        <p class="eyebrow">Seu ciclo de estudos</p>
+        <h1>Dashboard</h1>
+        <p class="muted">Revise primeiro o que esta vencendo, depois adicione frases novas.</p>
+    </div>
+    <a class="button primary" href="{% url 'study' %}">Comecar estudos</a>
+</section>
+
+<section class="metrics">
+    <article>
+        <span>{{ due_count }}</span>
+        <p>revisoes para hoje</p>
+    </article>
+    <article>
+        <span>{{ new_available }}</span>
+        <p>frases novas disponiveis</p>
+    </article>
+    <article>
+        <span>{{ new_today }}/{{ new_cards_block_size }}</span>
+        <p>frases novas hoje</p>
+    </article>
+</section>
+
+<section class="content-grid">
+    <article class="panel">
+        <h2>Proxima revisao</h2>
+        {% if due_count %}
+            <p class="big-number">{{ due_count }}</p>
+            <p>cartao{% if due_count != 1 %}s{% endif %} pronto{% if due_count != 1 %}s{% endif %} agora.</p>
+        {% elif next_due %}
+            <p class="big-number">{{ next_due|date:'d/m H:i' }}</p>
+            <p>Nenhum cartao vencido neste momento.</p>
+        {% else %}
+            <p class="big-number">Novo</p>
+            <p>Clique em comecar para iniciar a primeira frase.</p>
+        {% endif %}
+    </article>
+
+    <article class="panel">
+        <h2>Ultimas revisoes</h2>
+        {% if recent_reviews %}
+            <ul class="review-list">
+                {% for review in recent_reviews %}
+                    <li>
+                        <span>{{ review.get_last_grade_display|default:'Novo' }}</span>
+                        <p>{{ review.phrase.italian_text|truncatechars:86 }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">As revisoes vao aparecer aqui depois da primeira sessao.</p>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

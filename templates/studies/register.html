@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar conta{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <form class="auth-card" method="post" novalidate>
+        {% csrf_token %}
+        <p class="eyebrow">Nova conta</p>
+        <h1>Criar acesso</h1>
+        <p class="muted">Cadastro simples para acompanhar seu progresso nas revisoes.</p>
+
+        {% for field in form %}
+            <label>
+                <span>{{ field.label }}</span>
+                {{ field }}
+                {% for error in field.errors %}
+                    <small class="error">{{ error }}</small>
+                {% endfor %}
+            </label>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+            <div class="error-block">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <button class="button primary full" type="submit">Criar conta</button>
+        <p class="muted center">Ja tem conta? <a href="{% url 'login' %}">Entrar</a></p>
+    </form>
+</section>
+{% endblock %}

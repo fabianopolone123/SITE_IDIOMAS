@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Estudar{% endblock %}
+
+{% block content %}
+<section class="study-shell">
+    <div class="study-card">
+        <div class="card-meta">
+            <span>{{ state.phrase.chapter|default:'Alice' }}</span>
+            <span>Intervalo atual: {{ state.interval_days }} dia{% if state.interval_days != 1 %}s{% endif %}</span>
+        </div>
+
+        {% if stage == 'audio' %}
+            <div class="listen-first">
+                <p class="prompt-label">Primeiro escute a frase sem ver o texto. Tente repetir o som em voz alta.</p>
+                <button
+                    class="play-button"
+                    type="button"
+                    data-speak-text="{{ state.phrase.italian_text }}"
+                    data-speak-lang="it-IT"
+                >
+                    <span class="play-icon" aria-hidden="true">Play</span>
+                    <strong>Ouvir frase</strong>
+                </button>
+                <p class="audio-help" data-voice-status>Usando a voz italiana disponivel no seu navegador.</p>
+            </div>
+
+            <a class="button primary" href="{% url 'study' %}?stage=text">Mostrar frase</a>
+        {% else %}
+            <div class="phrase-head">
+                <div>
+                    <p class="prompt-label">Leia a frase em italiano, repita em voz alta e tente lembrar a traducao.</p>
+                    <p class="audio-help compact" data-voice-status>Toque em Play para ouvir a pronuncia.</p>
+                </div>
+                <button
+                    class="small-play"
+                    type="button"
+                    data-speak-text="{{ state.phrase.italian_text }}"
+                    data-speak-lang="it-IT"
+                    aria-label="Ouvir frase em italiano"
+                >
+                    Play
+                </button>
+            </div>
+            <h1>{{ state.phrase.italian_text }}</h1>
+
+        {% if stage == 'answer' %}
+            <div class="translation">
+                <span>Traducao</span>
+                <p>{{ state.phrase.portuguese_text|default:'Traducao ainda nao cadastrada para esta frase.' }}</p>
+            </div>
+
+            <div class="answer">
+                <h2>Dica de estudo</h2>
+                <p>{{ state.phrase.study_note|linebreaksbr }}</p>
+            </div>
+
+            <form class="grade-grid" method="post" action="{% url 'review' state.id %}">
+                {% csrf_token %}
+                <button type="submit" name="grade" value="again">
+                    <strong>Errei</strong>
+                    <span>volta em 10 min</span>
+                </button>
+                <button type="submit" name="grade" value="hard">
+                    <strong>Dificil</strong>
+                    <span>rever amanha</span>
+                </button>
+                <button type="submit" name="grade" value="good">
+                    <strong>Bom</strong>
+                    <span>intervalo cresce</span>
+                </button>
+                <button type="submit" name="grade" value="easy">
+                    <strong>Facil</strong>
+                    <span>espacar mais</span>
+                </button>
+            </form>
+        {% else %}
+            <a class="button primary" href="{% url 'study' %}?stage=answer">Mostrar resposta</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</section>
+
+<script src="{% static 'studies/speech.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <form class="auth-card" method="post" novalidate>
+        {% csrf_token %}
+        <p class="eyebrow">Acesso</p>
+        <h1>Entrar</h1>
+        <p class="muted">Continue de onde parou nas revisoes.</p>
+
+        {% for field in form %}
+            <label>
+                <span>{{ field.label }}</span>
+                {{ field }}
+                {% for error in field.errors %}
+                    <small class="error">{{ error }}</small>
+                {% endfor %}
+            </label>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+            <div class="error-block">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <button class="button primary full" type="submit">Entrar</button>
+        <p class="muted center">Ainda nao tem conta? <a href="{% url 'register' %}">Criar conta</a></p>
+    </form>
+</section>
+{% endblock %}

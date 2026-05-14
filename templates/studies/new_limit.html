@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Pausa nas frases novas{% endblock %}
+
+{% block content %}
+<section class="empty-state">
+    <p class="eyebrow">Pausa recomendada</p>
+    <h1>Voce ja iniciou {{ new_today }} frases novas hoje.</h1>
+    <p class="muted">
+        Continuar agora pode criar bastante revisao para amanha. O ideal e revisar o que ja entrou
+        antes de adicionar outro bloco de {{ new_cards_block_size }} frases novas.
+    </p>
+    <div class="actions">
+        <a class="button secondary" href="{% url 'dashboard' %}">Voltar ao dashboard</a>
+        <a class="button primary" href="{% url 'study' %}?continue_new=1">Quero continuar mesmo assim</a>
+    </div>
+</section>
+{% endblock %}
