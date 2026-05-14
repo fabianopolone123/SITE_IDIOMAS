@@ -78,6 +78,26 @@ root@145.223.93.162
 site_idiomas.service
 ```
 
+No proprio VPS, para puxar e publicar a versao mais recente:
+
+```bash
+cd /var/www/site_idiomas
+bash scripts/update_vps.sh
+```
+
+Opcionalmente, crie um atalho global no VPS:
+
+```bash
+sudo ln -sf /var/www/site_idiomas/scripts/update_vps.sh /usr/local/bin/atualizar-site-idiomas
+sudo chmod +x /var/www/site_idiomas/scripts/update_vps.sh
+```
+
+Depois use de qualquer pasta:
+
+```bash
+atualizar-site-idiomas
+```
+
 ## Atualizar cards em producao
 
 Os cards ficam versionados em `studies/alice_deck.py`. O banco de producao guarda usuarios,
