@@ -50,6 +50,34 @@ python manage.py test
 python manage.py check
 ```
 
+## Deploy automatico para o VPS
+
+Depois de alterar o projeto local, rode no PowerShell:
+
+```powershell
+.\scripts\deploy_vps.ps1 -Message "Descreva a alteracao"
+```
+
+Ou clique duas vezes em `deploy_vps.bat` e informe a mensagem do commit quando pedir.
+
+O script faz:
+
+- testes locais;
+- `python manage.py check`;
+- commit das alteracoes;
+- `git push origin main`;
+- atualizacao do VPS em `/var/www/site_idiomas`;
+- `migrate`, `import_alice_phrases`, `collectstatic`, `check`;
+- restart do servico `site_idiomas`.
+
+Ele usa por padrao:
+
+```text
+root@145.223.93.162
+/var/www/site_idiomas
+site_idiomas.service
+```
+
 ## Atualizar cards em producao
 
 Os cards ficam versionados em `studies/alice_deck.py`. O banco de producao guarda usuarios,
