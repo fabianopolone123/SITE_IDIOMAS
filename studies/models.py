@@ -15,6 +15,7 @@ class Profile(models.Model):
 
 
 class StudyPhrase(models.Model):
+    deck_key = models.CharField(max_length=40, unique=True, null=True, blank=True, db_index=True)
     source_title = models.CharField(max_length=180, default='Le avventure di Alice nel paese delle meraviglie')
     order = models.PositiveIntegerField(default=0, db_index=True)
     italian_text = models.TextField()

@@ -11,8 +11,8 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(StudyPhrase)
 class StudyPhraseAdmin(admin.ModelAdmin):
-    list_display = ['order', 'chapter', 'short_text']
-    search_fields = ['italian_text', 'portuguese_text', 'chapter']
+    list_display = ['deck_key', 'order', 'chapter', 'short_text']
+    search_fields = ['deck_key', 'italian_text', 'portuguese_text', 'chapter']
     list_filter = ['source_title', 'chapter']
 
     def short_text(self, obj):

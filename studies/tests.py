@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .alice_deck import ALICE_CARDS
+from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .models import Profile, ReviewState, StudyPhrase
 from .views import NEW_CARDS_BLOCK_SIZE
 
@@ -117,5 +117,26 @@ class ImportDeckTests(TestCase):
         review.refresh_from_db()
         self.assertEqual(review.phrase_id, phrase.id)
         self.assertEqual(review.repetitions, 3)
+        self.assertEqual(phrase.deck_key, 'alice-0001')
         self.assertEqual(phrase.portuguese_text, ALICE_CARDS[0][1])
         self.assertEqual(StudyPhrase.objects.count(), 2)
+
+    def test_import_uses_deck_key_when_text_changes(self):
+        user = User.objects.create_user(username='paolo', password='123')
+        card = next(iter_alice_cards(limit=1))
+        phrase = StudyPhrase.objects.create(
+            deck_key=card['deck_key'],
+            order=card['order'],
+            italian_text='Texto antigo do mesmo card.',
+            portuguese_text='traducao antiga',
+            study_note='nota antiga',
+        )
+        review = ReviewState.objects.create(user=user, phrase=phrase, repetitions=5)
+
+        call_command('import_alice_phrases', limit=1, stdout=StringIO())
+
+        phrase.refresh_from_db()
+        review.refresh_from_db()
+        self.assertEqual(review.phrase_id, phrase.id)
+        self.assertEqual(review.repetitions, 5)
+        self.assertEqual(phrase.italian_text, card['italian_text'])

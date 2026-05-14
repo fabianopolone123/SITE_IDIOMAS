@@ -1,3 +1,6 @@
+# Production rule: append new cards to the end of this list. Do not reorder existing
+# entries, because import_alice_phrases derives stable deck keys from the current
+# position, such as alice-0001, alice-0002, and so on.
 ALICE_CARDS = [
     ('Alice moriva di noia.', 'Alice estava morrendo de tedio.', 'moriva di noia e uma expressao idiomatica: literalmente, morria de tedio.'),
     ('Se ne stava seduta con la sorella.', 'Ela estava sentada com a irma.', 'se ne stava indica permanecer em certo estado ou lugar.'),
@@ -477,3 +480,15 @@ def build_study_note(italian_text, focus):
         'Como revisar: leia o italiano, cubra a traducao e diga o sentido em voz alta antes de revelar.\n'
         'Depois compare palavra por palavra e escolha a nota pensando na facilidade de lembrar sem olhar.'
     )
+
+
+def iter_alice_cards(limit=None):
+    cards = ALICE_CARDS if limit is None else ALICE_CARDS[:limit]
+    for index, (text, translation, focus) in enumerate(cards, start=1):
+        yield {
+            'deck_key': f'alice-{index:04d}',
+            'order': index,
+            'italian_text': text,
+            'portuguese_text': translation,
+            'study_note': build_study_note(text, focus),
+        }

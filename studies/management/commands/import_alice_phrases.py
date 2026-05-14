@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from studies.alice_deck import ALICE_CARDS, build_study_note
+from studies.alice_deck import ALICE_CARDS, iter_alice_cards
 from studies.models import StudyPhrase
 
 
@@ -54,13 +54,19 @@ class Command(BaseCommand):
 
         if options['from_pdf']:
             pdf_path = self.resolve_pdf(options.get('pdf'))
-            phrases = [(text, '', self.build_note(text)) for text in self.extract_phrases(pdf_path, limit)]
+            phrases = [
+                {
+                    'deck_key': f'pdf-{index:04d}',
+                    'order': index,
+                    'italian_text': text,
+                    'portuguese_text': '',
+                    'study_note': self.build_note(text),
+                }
+                for index, text in enumerate(self.extract_phrases(pdf_path, limit), start=1)
+            ]
             source_name = pdf_path.name
         else:
-            phrases = [
-                (text, translation, build_study_note(text, focus))
-                for text, translation, focus in ALICE_CARDS[:limit]
-            ]
+            phrases = list(iter_alice_cards(limit))
             source_name = 'frases curtas curadas de Alice'
 
         if not phrases:
@@ -79,23 +85,31 @@ class Command(BaseCommand):
             if reset:
                 StudyPhrase.objects.all().delete()
 
+            deck_keys = [phrase['deck_key'] for phrase in phrases]
+            italian_texts = [phrase['italian_text'] for phrase in phrases]
+            existing_by_key = {
+                phrase.deck_key: phrase
+                for phrase in StudyPhrase.objects.select_for_update().filter(deck_key__in=deck_keys)
+            }
             existing_by_text = {
                 phrase.italian_text: phrase
                 for phrase in StudyPhrase.objects.select_for_update().filter(
-                    italian_text__in=[text for text, _, _ in phrases]
+                    deck_key__isnull=True,
+                    italian_text__in=italian_texts,
                 )
             }
 
             created = 0
             updated = 0
-            for index, (text, translation, note) in enumerate(phrases, start=1):
-                phrase = existing_by_text.get(text)
+            for card in phrases:
+                phrase = existing_by_key.get(card['deck_key']) or existing_by_text.get(card['italian_text'])
                 if phrase is None:
                     StudyPhrase.objects.create(
-                        order=index,
-                        italian_text=text,
-                        portuguese_text=translation,
-                        study_note=note,
+                        deck_key=card['deck_key'],
+                        order=card['order'],
+                        italian_text=card['italian_text'],
+                        portuguese_text=card['portuguese_text'],
+                        study_note=card['study_note'],
                         chapter=chapter,
                     )
                     created += 1
@@ -103,9 +117,11 @@ class Command(BaseCommand):
 
                 changed = False
                 for field, value in {
-                    'order': index,
-                    'portuguese_text': translation,
-                    'study_note': note,
+                    'deck_key': card['deck_key'],
+                    'order': card['order'],
+                    'italian_text': card['italian_text'],
+                    'portuguese_text': card['portuguese_text'],
+                    'study_note': card['study_note'],
                     'chapter': chapter,
                 }.items():
                     if getattr(phrase, field) != value:
@@ -113,7 +129,7 @@ class Command(BaseCommand):
                         changed = True
 
                 if changed:
-                    phrase.save(update_fields=['order', 'portuguese_text', 'study_note', 'chapter'])
+                    phrase.save(update_fields=['deck_key', 'order', 'italian_text', 'portuguese_text', 'study_note', 'chapter'])
                     updated += 1
 
         return created, updated

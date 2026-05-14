@@ -38,3 +38,36 @@ python manage.py runserver 0.0.0.0:8002
 python manage.py test
 python manage.py check
 ```
+
+## Atualizar cards em producao
+
+Os cards ficam versionados em `studies/alice_deck.py`. O banco de producao guarda usuarios,
+cadastros e progresso de revisao. Para atualizar a VPS sem apagar progresso:
+
+```bash
+git pull origin main
+python manage.py migrate
+python manage.py import_alice_phrases
+```
+
+Depois reinicie o servico do Django/Gunicorn/Uvicorn configurado na VPS.
+
+O comando `import_alice_phrases` e incremental:
+
+- cria cards novos;
+- atualiza traducao, explicacao, ordem e texto de cards existentes;
+- preserva usuarios;
+- preserva `ReviewState`, intervalos, revisoes e historico de progresso.
+
+Nao use em producao:
+
+```bash
+python manage.py import_alice_phrases --reset
+```
+
+`--reset` apaga os cards e tambem apaga o progresso ligado a eles por cascata.
+
+Ao adicionar novos cards em `studies/alice_deck.py`, coloque sempre no final da lista
+`ALICE_CARDS`. Nao reordene cards antigos. As chaves estaveis sao geradas pela posicao atual
+do baralho (`alice-0001`, `alice-0002`, etc.) e sao usadas para preservar progresso mesmo
+quando corrigimos texto, traducao ou explicacao.
