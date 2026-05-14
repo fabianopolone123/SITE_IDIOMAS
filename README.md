@@ -2,6 +2,17 @@
 
 Site Django para estudos de italiano com repeticao espacada.
 
+## Documentacao para continuidade
+
+Antes de alterar o projeto, leia:
+
+```text
+docs/PROJECT_CONTEXT.md
+```
+
+Esse arquivo documenta arquitetura, SRS, cards, importacao segura, deploy/VPS,
+regras para preservar progresso dos usuarios e comandos de manutencao.
+
 ## Funcionalidades
 
 - Cadastro simples com username, senha, nome completo, WhatsApp e email.
