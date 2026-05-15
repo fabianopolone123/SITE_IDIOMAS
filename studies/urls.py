@@ -9,5 +9,6 @@ urlpatterns = [
     path('sair/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('estudar/', views.study, name='study'),
+    path('revisoes/', views.due_reviews, name='due_reviews'),
     path('revisao/<int:state_id>/', views.review, name='review'),
 ]

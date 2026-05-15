@@ -9,7 +9,12 @@
         <h1>Dashboard</h1>
         <p class="muted">Revise primeiro o que esta vencendo, depois adicione frases novas.</p>
     </div>
-    <a class="button primary" href="{% url 'study' %}">Comecar estudos</a>
+    <div class="actions dashboard-actions">
+        {% if due_count %}
+            <a class="button secondary" href="{% url 'due_reviews' %}">Fazer revisoes</a>
+        {% endif %}
+        <a class="button primary" href="{% url 'study' %}">Comecar estudos</a>
+    </div>
 </section>
 
 <section class="metrics">
@@ -33,6 +38,7 @@
         {% if due_count %}
             <p class="big-number">{{ due_count }}</p>
             <p>cartao{% if due_count != 1 %}s{% endif %} pronto{% if due_count != 1 %}s{% endif %} agora.</p>
+            <a class="button secondary panel-action" href="{% url 'due_reviews' %}">Revisar vencidos</a>
         {% elif next_due %}
             <p class="big-number">{{ next_due|date:'d/m H:i' }}</p>
             <p>Nenhum cartao vencido neste momento.</p>

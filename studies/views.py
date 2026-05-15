@@ -111,6 +111,28 @@ def study(request):
 
 
 @login_required
+def due_reviews(request):
+    state = next_due_review_state(request.user)
+    if state is None:
+        return render(
+            request,
+            'studies/no_cards.html',
+            {
+                'title': 'Revisoes concluidas',
+                'message': 'Nao ha revisoes vencidas agora. Voce pode voltar ao dashboard ou iniciar cards novos.',
+            },
+        )
+
+    stage = request.GET.get('stage', 'audio')
+    if request.GET.get('reveal') == '1':
+        stage = 'answer'
+    if stage not in {'audio', 'text', 'answer'}:
+        stage = 'audio'
+
+    return render(request, 'studies/study.html', {'state': state, 'stage': stage, 'review_only': True})
+
+
+@login_required
 @require_POST
 def review(request, state_id):
     state = get_object_or_404(ReviewState, id=state_id, user=request.user)
@@ -123,6 +145,8 @@ def review(request, state_id):
     state.schedule(grade)
     state.save()
     messages.success(request, 'Revisao registrada. A proxima data foi recalculada.')
+    if request.POST.get('review_only') == '1':
+        return redirect('due_reviews')
     return redirect('study')
 
 
@@ -130,14 +154,18 @@ def new_cards_started_today(user):
     return ReviewState.objects.filter(user=user, first_seen_at__date=timezone.localdate()).count()
 
 
-def next_due_state(user, allow_new_block=False):
-    now = timezone.now()
-    due_state = (
-        ReviewState.objects.filter(user=user, due_at__lte=now)
+def next_due_review_state(user):
+    return (
+        ReviewState.objects.filter(user=user, due_at__lte=timezone.now())
         .select_related('phrase')
         .order_by('due_at', 'phrase__order')
         .first()
     )
+
+
+def next_due_state(user, allow_new_block=False):
+    now = timezone.now()
+    due_state = next_due_review_state(user)
     if due_state:
         return due_state
 

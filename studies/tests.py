@@ -98,6 +98,34 @@ class AccountAndStudyFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ReviewState.objects.filter(user=user).count(), NEW_CARDS_BLOCK_SIZE + 1)
 
+    def test_due_reviews_does_not_create_new_cards(self):
+        user = User.objects.create_user(username='bia', password='123')
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('due_reviews'))
+
+        self.assertTemplateUsed(response, 'studies/no_cards.html')
+        self.assertEqual(ReviewState.objects.filter(user=user).count(), 0)
+
+    def test_due_reviews_shows_only_due_cards_and_keeps_flow(self):
+        user = User.objects.create_user(username='caio', password='123')
+        due_phrase = StudyPhrase.objects.create(order=2, italian_text='Carta vencida.')
+        future_phrase = StudyPhrase.objects.create(order=3, italian_text='Carta futura.')
+        due_state = ReviewState.objects.create(user=user, phrase=due_phrase, due_at=timezone.now() - timedelta(minutes=1))
+        ReviewState.objects.create(user=user, phrase=future_phrase, due_at=timezone.now() + timedelta(days=1))
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('due_reviews'))
+        self.assertContains(response, due_phrase.italian_text)
+
+        response = self.client.post(
+            reverse('review', args=[due_state.id]),
+            {'grade': ReviewState.GOOD, 'review_only': '1'},
+        )
+
+        self.assertRedirects(response, reverse('due_reviews'))
+        self.assertEqual(ReviewState.objects.filter(user=user).count(), 2)
+
 
 class ImportDeckTests(TestCase):
     def test_import_updates_existing_cards_without_deleting_review_history(self):

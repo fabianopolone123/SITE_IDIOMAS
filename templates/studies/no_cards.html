@@ -5,8 +5,8 @@
 {% block content %}
 <section class="empty-state">
     <p class="eyebrow">Sessao concluida</p>
-    <h1>Nenhuma frase para revisar agora.</h1>
-    <p class="muted">O sistema vai liberar as proximas frases quando chegar a hora certa.</p>
+    <h1>{{ title|default:'Nenhuma frase para revisar agora.' }}</h1>
+    <p class="muted">{{ message|default:'O sistema vai liberar as proximas frases quando chegar a hora certa.' }}</p>
     <a class="button secondary" href="{% url 'dashboard' %}">Voltar ao dashboard</a>
 </section>
 {% endblock %}

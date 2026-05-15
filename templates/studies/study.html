@@ -26,7 +26,11 @@
                 <p class="audio-help" data-voice-status>Usando a voz italiana disponivel no seu navegador.</p>
             </div>
 
-            <a class="button primary" href="{% url 'study' %}?stage=text">Mostrar frase</a>
+            {% if review_only %}
+                <a class="button primary" href="{% url 'due_reviews' %}?stage=text">Mostrar frase</a>
+            {% else %}
+                <a class="button primary" href="{% url 'study' %}?stage=text">Mostrar frase</a>
+            {% endif %}
         {% else %}
             <div class="phrase-head">
                 <div>
@@ -58,6 +62,9 @@
 
             <form class="grade-grid" method="post" action="{% url 'review' state.id %}">
                 {% csrf_token %}
+                {% if review_only %}
+                    <input type="hidden" name="review_only" value="1">
+                {% endif %}
                 <button type="submit" name="grade" value="again">
                     <strong>Errei</strong>
                     <span>volta em 10 min</span>
@@ -76,7 +83,11 @@
                 </button>
             </form>
         {% else %}
-            <a class="button primary" href="{% url 'study' %}?stage=answer">Mostrar resposta</a>
+            {% if review_only %}
+                <a class="button primary" href="{% url 'due_reviews' %}?stage=answer">Mostrar resposta</a>
+            {% else %}
+                <a class="button primary" href="{% url 'study' %}?stage=answer">Mostrar resposta</a>
+            {% endif %}
         {% endif %}
         {% endif %}
     </div>

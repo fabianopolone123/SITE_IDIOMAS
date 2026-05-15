@@ -290,6 +290,15 @@ input:focus {
     padding: 42px 0 26px;
 }
 
+.dashboard-actions {
+    justify-content: flex-end;
+    margin-top: 0;
+}
+
+.panel-action {
+    margin-top: 18px;
+}
+
 .metrics article span {
     display: block;
     font-family: Georgia, "Times New Roman", serif;
