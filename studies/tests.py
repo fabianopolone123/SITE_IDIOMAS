@@ -184,7 +184,7 @@ class ImportDeckTests(TestCase):
         first = StudyPhrase.objects.get(deck_key='tech-0001')
         last = StudyPhrase.objects.get(deck_key='tech-0200')
         self.assertIn('Entrevista de TI', first.source_title)
-        self.assertIn('Vocabulário palavra por palavra', first.study_note)
+        self.assertIn('Vocabulário desta frase', first.study_note)
         self.assertLessEqual(len(first.italian_text), 30)
         self.assertIn('apprendimento continuo', last.italian_text)
 
@@ -233,14 +233,17 @@ class VanRegistrationTests(TestCase):
     def registration_payload(self):
         return {
             'responsible_name': 'Responsavel Teste',
-            'responsible_rg': '12.345.678-9',
             'responsible_cpf': '12345678900',
             'responsible_phone': '16999999999',
-            'responsible_email': 'responsavel@example.com',
+            'responsible_phone_alt': '1633334444',
             'minor_name': 'Adolescente Teste',
-            'minor_birth_date': '2010-05-10',
-            'minor_document': '98765432100',
-            'transport_by': 'van',
+            'minor_cpf': '98765432100',
+            'event_name': 'Passaporte: Sua Identidade em Alta Definição',
+            'event_start_date': '2026-06-01',
+            'event_end_date': '2026-06-02',
+            'health_info': 'Alergia a amendoim.',
+            'city': 'São Carlos',
+            'signature_date': '2026-05-21',
         }
 
     def test_van_registration_creates_pending_record(self):
@@ -302,7 +305,7 @@ class VanRegistrationTests(TestCase):
 
         response = self.client.post(
             reverse('van_consult'),
-            {'responsible_cpf': '12345678900', 'minor_birth_date': '2010-05-10'},
+            {'responsible_cpf': '12345678900', 'minor_cpf': '98765432100'},
         )
 
         self.assertContains(response, 'Adolescente Teste')

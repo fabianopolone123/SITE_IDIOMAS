@@ -28,7 +28,7 @@ class ReviewStateAdmin(admin.ModelAdmin):
 
 @admin.register(VanRegistration)
 class VanRegistrationAdmin(admin.ModelAdmin):
-    list_display = ['minor_name', 'responsible_name', 'responsible_cpf', 'status', 'created_at']
+    list_display = ['minor_name', 'minor_cpf', 'responsible_name', 'responsible_cpf', 'status', 'created_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['minor_name', 'responsible_name', 'responsible_cpf', 'minor_document']
+    search_fields = ['minor_name', 'minor_cpf', 'responsible_name', 'responsible_cpf', 'minor_document']
     readonly_fields = ['public_id', 'created_at', 'updated_at']

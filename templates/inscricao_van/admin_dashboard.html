@@ -59,11 +59,14 @@
             <dl>
                 <dt>Responsável</dt><dd>{{ item.responsible_name }}</dd>
                 <dt>CPF</dt><dd>{{ item.responsible_cpf }}</dd>
-                <dt>RG responsável</dt><dd>{{ item.responsible_rg }}</dd>
                 <dt>WhatsApp</dt><dd>{{ item.responsible_phone|default:'Não informado' }}</dd>
+                <dt>Telefone alternativo</dt><dd>{{ item.responsible_phone_alt|default:'Não informado' }}</dd>
                 <dt>Email</dt><dd>{{ item.responsible_email|default:'Não informado' }}</dd>
-                <dt>Nascimento do menor</dt><dd>{{ item.minor_birth_date|date:'d/m/Y' }}</dd>
-                <dt>Documento do menor</dt><dd>{{ item.minor_document|default:'Não informado' }}</dd>
+                <dt>CPF adolescente</dt><dd>{{ item.minor_cpf|default:item.minor_document|default:'Não informado' }}</dd>
+                <dt>Evento</dt><dd>{{ item.event_name }}</dd>
+                <dt>Período</dt><dd>{{ item.event_start_date|date:'d/m/Y' }} a {{ item.event_end_date|date:'d/m/Y' }}</dd>
+                <dt>Saúde</dt><dd>{{ item.health_info|linebreaksbr|default:'Não informado' }}</dd>
+                <dt>Cidade/data</dt><dd>{{ item.city|default:'Não informado' }} - {{ item.signature_date|date:'d/m/Y' }}</dd>
                 <dt>Status</dt><dd>{{ item.get_status_display }}</dd>
             </dl>
             <div class="van-actions left">

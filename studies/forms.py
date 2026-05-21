@@ -42,36 +42,44 @@ class LoginForm(AuthenticationForm):
 class VanRegistrationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['transport_by'].initial = 'van'
-        self.fields['transport_by'].disabled = True
-        self.fields['transport_by'].widget.attrs.update({'readonly': 'readonly'})
+        for field_name in ['minor_cpf', 'event_start_date', 'event_end_date', 'city', 'signature_date']:
+            self.fields[field_name].required = True
 
     class Meta:
         model = VanRegistration
         fields = [
             'responsible_name',
-            'responsible_rg',
             'responsible_cpf',
             'responsible_phone',
-            'responsible_email',
+            'responsible_phone_alt',
             'minor_name',
-            'minor_birth_date',
-            'minor_document',
-            'transport_by',
+            'minor_cpf',
+            'event_name',
+            'event_start_date',
+            'event_end_date',
+            'health_info',
+            'city',
+            'signature_date',
         ]
         widgets = {
-            'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
+            'event_start_date': forms.DateInput(attrs={'type': 'date'}),
+            'event_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'signature_date': forms.DateInput(attrs={'type': 'date'}),
+            'health_info': forms.Textarea(attrs={'rows': 4}),
         }
         labels = {
-            'responsible_name': 'Nome do pai/mãe ou responsável legal',
-            'responsible_rg': 'RG do responsável',
+            'responsible_name': 'Nome completo do responsável legal',
             'responsible_cpf': 'CPF do responsável',
-            'responsible_phone': 'WhatsApp do responsável',
-            'responsible_email': 'Email do responsável',
-            'minor_name': 'Nome do(a) menor',
-            'minor_birth_date': 'Data de nascimento do(a) menor',
-            'minor_document': 'RG/CPF do(a) menor, se houver',
-            'transport_by': 'Transporte realizado por',
+            'responsible_phone': 'Telefone do responsável',
+            'responsible_phone_alt': 'Segundo telefone do responsável',
+            'minor_name': 'Nome completo do adolescente',
+            'minor_cpf': 'CPF do adolescente',
+            'event_name': 'Nome do evento',
+            'event_start_date': 'Data inicial do evento',
+            'event_end_date': 'Data final do evento',
+            'health_info': 'Informações importantes de saúde',
+            'city': 'Cidade',
+            'signature_date': 'Data do termo',
         }
 
     def save(self, commit=True):
@@ -85,10 +93,7 @@ class VanRegistrationForm(forms.ModelForm):
 
 class VanConsultForm(forms.Form):
     responsible_cpf = forms.CharField(label='CPF do responsável', max_length=20)
-    minor_birth_date = forms.DateField(
-        label='Data de nascimento do menor',
-        widget=forms.DateInput(attrs={'type': 'date'}),
-    )
+    minor_cpf = forms.CharField(label='CPF do adolescente', max_length=20)
 
 
 class VanSignedTermForm(forms.ModelForm):

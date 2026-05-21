@@ -282,34 +282,88 @@ TECH_TOPICS = [
 
 
 def build_tech_note(topic, mode):
-    common = (
-        'Vocabulário palavra por palavra:\n'
-        f"- {topic['it']} = {topic['pt']}\n"
-        '- ho esperienza con = tenho experiência com\n'
-        '- durante un progetto = durante um projeto\n'
-        '- quando c è un problema = quando existe um problema\n'
-        '- posso spiegare = posso explicar\n'
-        f"- {topic['action_it']} = {topic['action_pt']}\n"
-        f"- {topic['problem_it']} = {topic['problem_pt']}\n"
-        f"- {topic['result_it']} = {topic['result_pt']}\n"
+    mode_notes = {
+        'topic': {
+            'words': [
+                ('conosco', 'conheço'),
+                (topic['it'], topic['pt']),
+            ],
+            'explanation': 'Frase curta para abrir assunto. Use quando quiser dizer que conhece o tema, sem prometer experiência profunda.',
+            'practice': f'Expanda oralmente: Conosco {topic["it"]}, ma voglio approfondire con esempi pratici.',
+        },
+        'experience': {
+            'words': [
+                ('ho esperienza con', 'tenho experiência com'),
+                (topic['it'], topic['pt']),
+            ],
+            'explanation': 'Use para afirmar vivência prática. Em entrevista, complete com quanto tempo, projeto ou responsabilidade.',
+            'practice': f'Expanda oralmente: Ho esperienza con {topic["it"]} in progetti reali.',
+        },
+        'action': {
+            'words': [
+                ('uso', 'uso'),
+                (topic['it'], topic['pt']),
+                ('per', 'para'),
+                (topic['action_it'], topic['action_pt']),
+            ],
+            'explanation': 'Estrutura útil para explicar finalidade: tecnologia + para quê. Boa para respostas técnicas objetivas.',
+            'practice': f'Troque o final: Uso {topic["it"]} per migliorare il lavoro del team.',
+        },
+        'problem': {
+            'words': [
+                ('il problema era', 'o problema era'),
+                (topic['problem_it'], topic['problem_pt']),
+            ],
+            'explanation': 'Serve para iniciar uma resposta no formato situação-problema. Depois diga o que você fez e qual foi o resultado.',
+            'practice': f'Continue em voz alta: Il problema era {topic["problem_it"]}, quindi ho analizzato i dati.',
+        },
+        'result': {
+            'words': [
+                ('la soluzione', 'a solução'),
+                ('ha aiutato a', 'ajudou a'),
+                (topic['result_it'], topic['result_pt']),
+            ],
+            'explanation': 'Use para mostrar impacto. Essa frase ajuda a não ficar só na ferramenta; ela mostra valor entregue.',
+            'practice': f'Continue em voz alta: La soluzione ha aiutato a {topic["result_it"]} per gli utenti.',
+        },
+        'project': {
+            'words': [
+                ('in un progetto', 'em um projeto'),
+                ('ho lavorato su', 'trabalhei com/em'),
+                (topic['it'], topic['pt']),
+            ],
+            'explanation': 'Boa frase para começar um exemplo real. Depois cite contexto, sua ação e resultado.',
+            'practice': f'Expanda oralmente: In un progetto, ho lavorato su {topic["it"]} con altri sviluppatori.',
+        },
+        'team': {
+            'words': [
+                ('ho spiegato', 'expliquei'),
+                (topic['it'], topic['pt']),
+                ('al team', 'para a equipe'),
+            ],
+            'explanation': 'Mostra comunicação técnica. Use quando quiser destacar clareza, documentação ou colaboração.',
+            'practice': f'Troque o complemento: Ho spiegato {topic["it"]} a una persona non tecnica.',
+        },
+        'interview': {
+            'words': [
+                ('posso fare', 'posso fazer/dar'),
+                ('un esempio', 'um exemplo'),
+                ('su', 'sobre'),
+                (topic['it'], topic['pt']),
+            ],
+            'explanation': 'Frase pronta para entrevista. Use quando o entrevistador pedir exemplo concreto.',
+            'practice': f'Continue em voz alta: Posso fare un esempio su {topic["it"]}: in un progetto...',
+        },
+    }
+    note = mode_notes[mode]
+    vocabulary = '\n'.join(f'- {italian} = {portuguese}' for italian, portuguese in note['words'])
+    return (
+        f'Vocabulário desta frase:\n{vocabulary}\n\n'
+        f'Como usar:\n- {note["explanation"]}\n'
+        f'- Tema técnico: {topic["context"]}\n\n'
+        f'Treino de entrevista:\n- {note["practice"]}\n'
+        '- Depois responda em três passos: situação, ação e resultado.'
     )
-    usage = (
-        'Uso em contextos diferentes:\n'
-        f"- Contexto técnico: use {topic['it']} para explicar decisões, ferramentas e responsabilidades.\n"
-        f"- Contexto comportamental: conecte {topic['it']} com colaboração, clareza e impacto no time.\n"
-        f"- Contexto de entrevista: responda com situação, ação e resultado; evite só listar tecnologia.\n"
-    )
-    focus = {
-        'topic': 'Foco: reconhecer o termo principal e pronunciá-lo com segurança.',
-        'experience': 'Foco: apresentar experiência de forma direta, sem parecer genérico.',
-        'action': 'Foco: explicar o que você faz na prática usando esse tema.',
-        'problem': 'Foco: explicar como você identifica problema antes de propor solução.',
-        'result': 'Foco: ligar a tecnologia a resultado claro para o negócio ou para o usuário.',
-        'project': 'Foco: contar uma situação real de projeto e mostrar sua contribuição.',
-        'team': 'Foco: mostrar colaboração técnica e comunicação com o time.',
-        'interview': 'Foco: transformar o tema em resposta pronta para entrevista.',
-    }[mode]
-    return f'{common}\n{usage}\n{focus}\n{topic["context"]}'
 
 
 TECH_CARD_PATTERNS = [
