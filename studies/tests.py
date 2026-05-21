@@ -178,12 +178,15 @@ class ImportDeckTests(TestCase):
         self.assertEqual(phrase.italian_text, card['italian_text'])
 
     def test_import_tech_cards_creates_separate_deck(self):
-        call_command('import_tech_phrases', limit=100, stdout=StringIO())
+        call_command('import_tech_phrases', limit=200, stdout=StringIO())
 
-        self.assertEqual(StudyPhrase.objects.filter(deck_key__startswith='tech-').count(), 100)
+        self.assertEqual(StudyPhrase.objects.filter(deck_key__startswith='tech-').count(), 200)
         first = StudyPhrase.objects.get(deck_key='tech-0001')
+        last = StudyPhrase.objects.get(deck_key='tech-0200')
         self.assertIn('Entrevista de TI', first.source_title)
         self.assertIn('Vocabulário palavra por palavra', first.study_note)
+        self.assertLessEqual(len(first.italian_text), 30)
+        self.assertIn('apprendimento continuo', last.italian_text)
 
 
 class TechStudyFlowTests(TestCase):

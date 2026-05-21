@@ -300,45 +300,77 @@ def build_tech_note(topic, mode):
         f"- Contexto de entrevista: responda com situação, ação e resultado; evite só listar tecnologia.\n"
     )
     focus = {
+        'topic': 'Foco: reconhecer o termo principal e pronunciá-lo com segurança.',
         'experience': 'Foco: apresentar experiência de forma direta, sem parecer genérico.',
+        'action': 'Foco: explicar o que você faz na prática usando esse tema.',
+        'problem': 'Foco: explicar como você identifica problema antes de propor solução.',
+        'result': 'Foco: ligar a tecnologia a resultado claro para o negócio ou para o usuário.',
         'project': 'Foco: contar uma situação real de projeto e mostrar sua contribuição.',
-        'problem': 'Foco: explicar como você investiga problema antes de propor solução.',
+        'team': 'Foco: mostrar colaboração técnica e comunicação com o time.',
         'interview': 'Foco: transformar o tema em resposta pronta para entrevista.',
     }[mode]
     return f'{common}\n{usage}\n{focus}\n{topic["context"]}'
 
 
+TECH_CARD_PATTERNS = [
+    (
+        "Conosco {it}.",
+        "Conheço {pt}.",
+        'topic',
+    ),
+    (
+        "Ho esperienza con {it}.",
+        "Tenho experiência com {pt}.",
+        'experience',
+    ),
+    (
+        "Uso {it} per {action_it}.",
+        "Uso {pt} para {action_pt}.",
+        'action',
+    ),
+    (
+        "Il problema era {problem_it}.",
+        "O problema era {problem_pt}.",
+        'problem',
+    ),
+    (
+        "La soluzione ha aiutato a {result_it}.",
+        "A solução ajudou a {result_pt}.",
+        'result',
+    ),
+    (
+        "In un progetto, ho lavorato su {it}.",
+        "Em um projeto, trabalhei com {pt}.",
+        'project',
+    ),
+    (
+        "Ho spiegato {it} al team.",
+        "Expliquei {pt} para a equipe.",
+        'team',
+    ),
+    (
+        "Posso fare un esempio su {it}.",
+        "Posso dar um exemplo sobre {pt}.",
+        'interview',
+    ),
+]
+
+
 def iter_tech_cards(limit=None):
     cards = []
     for topic in TECH_TOPICS:
-        cards.extend(
-            [
+        for italian_pattern, portuguese_pattern, mode in TECH_CARD_PATTERNS:
+            cards.append(
                 (
-                    f"Ho esperienza con {topic['it']} e so usare questo tema per {topic['action_it']}.",
-                    f"Tenho experiência com {topic['pt']} e sei usar esse tema para {topic['action_pt']}.",
-                    'experience',
-                ),
-                (
-                    f"Durante un progetto, ho usato {topic['it']} per {topic['result_it']}.",
-                    f"Durante um projeto, usei {topic['pt']} para {topic['result_pt']}.",
-                    'project',
-                ),
-                (
-                    f"Quando incontro {topic['problem_it']}, prima raccolgo dati e poi scelgo una soluzione.",
-                    f"Quando encontro {topic['problem_pt']}, primeiro coleto dados e depois escolho uma solução.",
-                    'problem',
-                ),
-                (
-                    f"In un colloquio, posso spiegare {topic['it']} con un esempio concreto e misurabile.",
-                    f"Em uma entrevista, posso explicar {topic['pt']} com um exemplo concreto e mensurável.",
-                    'interview',
-                ),
-            ]
-        )
+                    italian_pattern.format(**topic),
+                    portuguese_pattern.format(**topic),
+                    mode,
+                )
+            )
 
     selected = cards if limit is None else cards[:limit]
     for index, (text, translation, mode) in enumerate(selected, start=1):
-        topic = TECH_TOPICS[(index - 1) // 4]
+        topic = TECH_TOPICS[(index - 1) // len(TECH_CARD_PATTERNS)]
         yield {
             'deck_key': f'tech-{index:04d}',
             'order': 10000 + index,

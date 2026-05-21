@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Importa cards de italiano para entrevista na área de TI preservando revisões existentes.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--limit', type=int, default=100, help='Quantidade máxima de cards a importar.')
+        parser.add_argument('--limit', type=int, default=200, help='Quantidade máxima de cards a importar.')
 
     def handle(self, *args, **options):
         cards = list(iter_tech_cards(options['limit']))
