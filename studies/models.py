@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from .formatters import format_cpf, format_phone, only_digits
+
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -135,7 +137,31 @@ class VanRegistration(models.Model):
         if self.signed_term and self.status != self.SIGNED_RECEIVED:
             self.status = self.SIGNED_RECEIVED
 
+    def normalize_contact_fields(self):
+        self.responsible_cpf = only_digits(self.responsible_cpf)
+        self.minor_cpf = only_digits(self.minor_cpf)
+        self.minor_document = only_digits(self.minor_document)
+        self.responsible_phone = only_digits(self.responsible_phone)
+        self.responsible_phone_alt = only_digits(self.responsible_phone_alt)
+
+    @property
+    def responsible_cpf_formatted(self):
+        return format_cpf(self.responsible_cpf)
+
+    @property
+    def minor_cpf_formatted(self):
+        return format_cpf(self.minor_cpf or self.minor_document)
+
+    @property
+    def responsible_phone_formatted(self):
+        return format_phone(self.responsible_phone)
+
+    @property
+    def responsible_phone_alt_formatted(self):
+        return format_phone(self.responsible_phone_alt)
+
     def save(self, *args, **kwargs):
+        self.normalize_contact_fields()
         self.mark_signed_if_needed()
         super().save(*args, **kwargs)
 

@@ -360,7 +360,7 @@ def van_consult(request):
         registration = (
             VanRegistration.objects.filter(
                 responsible_cpf=form.cleaned_data['responsible_cpf'],
-                minor_cpf=form.cleaned_data['minor_cpf'],
+                minor_birth_date=form.cleaned_data['minor_birth_date'],
             )
             .order_by('-created_at')
             .first()

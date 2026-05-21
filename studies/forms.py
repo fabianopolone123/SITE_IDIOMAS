@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from .models import Profile
 from .models import VanRegistration
+from .formatters import validate_cpf_digits, validate_phone_digits
 
 
 class RegisterForm(forms.Form):
@@ -42,7 +43,15 @@ class LoginForm(AuthenticationForm):
 class VanRegistrationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name in ['minor_cpf', 'event_start_date', 'event_end_date', 'city', 'signature_date']:
+        for field_name in [
+            'minor_birth_date',
+            'minor_cpf',
+            'responsible_phone',
+            'event_start_date',
+            'event_end_date',
+            'city',
+            'signature_date',
+        ]:
             self.fields[field_name].required = True
 
     class Meta:
@@ -53,6 +62,7 @@ class VanRegistrationForm(forms.ModelForm):
             'responsible_phone',
             'responsible_phone_alt',
             'minor_name',
+            'minor_birth_date',
             'minor_cpf',
             'event_name',
             'event_start_date',
@@ -64,6 +74,7 @@ class VanRegistrationForm(forms.ModelForm):
         widgets = {
             'event_start_date': forms.DateInput(attrs={'type': 'date'}),
             'event_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
             'signature_date': forms.DateInput(attrs={'type': 'date'}),
             'health_info': forms.Textarea(attrs={'rows': 4}),
         }
@@ -73,6 +84,7 @@ class VanRegistrationForm(forms.ModelForm):
             'responsible_phone': 'Telefone do responsável',
             'responsible_phone_alt': 'Segundo telefone do responsável',
             'minor_name': 'Nome completo do adolescente',
+            'minor_birth_date': 'Data de nascimento do adolescente',
             'minor_cpf': 'CPF do adolescente',
             'event_name': 'Nome do evento',
             'event_start_date': 'Data inicial do evento',
@@ -81,6 +93,30 @@ class VanRegistrationForm(forms.ModelForm):
             'city': 'Cidade',
             'signature_date': 'Data do termo',
         }
+
+    def clean_responsible_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['responsible_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_minor_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['minor_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_responsible_phone(self):
+        try:
+            return validate_phone_digits(self.cleaned_data['responsible_phone'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_responsible_phone_alt(self):
+        try:
+            return validate_phone_digits(self.cleaned_data.get('responsible_phone_alt'), required=False)
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -93,7 +129,16 @@ class VanRegistrationForm(forms.ModelForm):
 
 class VanConsultForm(forms.Form):
     responsible_cpf = forms.CharField(label='CPF do responsável', max_length=20)
-    minor_cpf = forms.CharField(label='CPF do adolescente', max_length=20)
+    minor_birth_date = forms.DateField(
+        label='Data de nascimento do adolescente',
+        widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+
+    def clean_responsible_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['responsible_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
 
 
 class VanSignedTermForm(forms.ModelForm):

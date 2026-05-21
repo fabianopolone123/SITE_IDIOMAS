@@ -36,7 +36,7 @@
                 {% for item in registrations %}
                     <tr>
                         <td data-label="Menor">{{ item.minor_name }}</td>
-                        <td data-label="Responsável">{{ item.responsible_name }}</td>
+                        <td data-label="Responsável">{{ item.responsible_name }}<br><small>{{ item.responsible_cpf_formatted }}</small></td>
                         <td data-label="Status">{{ item.get_status_display }}</td>
                         <td data-label="Data">{{ item.created_at|date:'d/m/Y H:i' }}</td>
                         <td data-label="Ações">
@@ -58,11 +58,12 @@
             <h2>{{ item.minor_name }}</h2>
             <dl>
                 <dt>Responsável</dt><dd>{{ item.responsible_name }}</dd>
-                <dt>CPF</dt><dd>{{ item.responsible_cpf }}</dd>
-                <dt>WhatsApp</dt><dd>{{ item.responsible_phone|default:'Não informado' }}</dd>
-                <dt>Telefone alternativo</dt><dd>{{ item.responsible_phone_alt|default:'Não informado' }}</dd>
+                <dt>CPF</dt><dd>{{ item.responsible_cpf_formatted }}</dd>
+                <dt>WhatsApp</dt><dd>{{ item.responsible_phone_formatted|default:'Não informado' }}</dd>
+                <dt>Telefone alternativo</dt><dd>{{ item.responsible_phone_alt_formatted|default:'Não informado' }}</dd>
                 <dt>Email</dt><dd>{{ item.responsible_email|default:'Não informado' }}</dd>
-                <dt>CPF adolescente</dt><dd>{{ item.minor_cpf|default:item.minor_document|default:'Não informado' }}</dd>
+                <dt>Nascimento</dt><dd>{{ item.minor_birth_date|date:'d/m/Y'|default:'Não informado' }}</dd>
+                <dt>CPF adolescente</dt><dd>{{ item.minor_cpf_formatted|default:'Não informado' }}</dd>
                 <dt>Evento</dt><dd>{{ item.event_name }}</dd>
                 <dt>Período</dt><dd>{{ item.event_start_date|date:'d/m/Y' }} a {{ item.event_end_date|date:'d/m/Y' }}</dd>
                 <dt>Saúde</dt><dd>{{ item.health_info|linebreaksbr|default:'Não informado' }}</dd>

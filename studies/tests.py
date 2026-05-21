@@ -233,11 +233,12 @@ class VanRegistrationTests(TestCase):
     def registration_payload(self):
         return {
             'responsible_name': 'Responsavel Teste',
-            'responsible_cpf': '12345678900',
-            'responsible_phone': '16999999999',
-            'responsible_phone_alt': '1633334444',
+            'responsible_cpf': '123.456.789-00',
+            'responsible_phone': '(16) 99999-9999',
+            'responsible_phone_alt': '(16) 3333-4444',
             'minor_name': 'Adolescente Teste',
-            'minor_cpf': '98765432100',
+            'minor_birth_date': '2010-05-10',
+            'minor_cpf': '987.654.321-00',
             'event_name': 'Passaporte: Sua Identidade em Alta Definição',
             'event_start_date': '2026-06-01',
             'event_end_date': '2026-06-02',
@@ -252,6 +253,10 @@ class VanRegistrationTests(TestCase):
         registration = VanRegistration.objects.get()
         self.assertRedirects(response, reverse('van_signature', args=[registration.public_id]))
         self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
+        self.assertEqual(registration.responsible_cpf, '12345678900')
+        self.assertEqual(registration.minor_cpf, '98765432100')
+        self.assertEqual(registration.responsible_phone, '16999999999')
+        self.assertEqual(registration.responsible_phone_alt, '1633334444')
 
     def test_van_transport_is_forced_to_van(self):
         payload = self.registration_payload()
@@ -305,10 +310,29 @@ class VanRegistrationTests(TestCase):
 
         response = self.client.post(
             reverse('van_consult'),
-            {'responsible_cpf': '12345678900', 'minor_cpf': '98765432100'},
+            {'responsible_cpf': '123.456.789-00', 'minor_birth_date': '2010-05-10'},
         )
 
         self.assertContains(response, 'Adolescente Teste')
+
+    def test_normalize_van_registrations_command_updates_existing_data(self):
+        registration = VanRegistration.objects.create(
+            **{
+                **self.registration_payload(),
+                'responsible_cpf': '123.456.789-00',
+                'minor_cpf': '987.654.321-00',
+                'responsible_phone': '(16) 99999-9999',
+                'responsible_phone_alt': '(16) 3333-4444',
+            }
+        )
+
+        call_command('normalize_van_registrations', stdout=StringIO())
+
+        registration.refresh_from_db()
+        self.assertEqual(registration.responsible_cpf, '12345678900')
+        self.assertEqual(registration.minor_cpf, '98765432100')
+        self.assertEqual(registration.responsible_phone, '16999999999')
+        self.assertEqual(registration.responsible_phone_formatted, '(16) 99999-9999')
 
     def test_van_admin_requires_password_then_shows_dashboard(self):
         VanRegistration.objects.create(**self.registration_payload())
