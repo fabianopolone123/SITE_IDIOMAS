@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .tech_deck import iter_tech_cards
+from .forms import VAN_EVENT_DATE
 from .models import Profile, ReviewState, StudyPhrase, VanRegistration
 from .views import NEW_CARDS_BLOCK_SIZE
 
@@ -257,6 +258,8 @@ class VanRegistrationTests(TestCase):
         self.assertEqual(registration.minor_cpf, '98765432100')
         self.assertEqual(registration.responsible_phone, '16999999999')
         self.assertEqual(registration.responsible_phone_alt, '1633334444')
+        self.assertEqual(registration.event_start_date, VAN_EVENT_DATE)
+        self.assertEqual(registration.event_end_date, VAN_EVENT_DATE)
 
     def test_van_registration_reuses_pending_record_for_double_submit(self):
         first_response = self.client.post(reverse('van_register'), self.registration_payload())

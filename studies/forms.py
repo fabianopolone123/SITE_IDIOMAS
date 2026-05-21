@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -5,6 +7,8 @@ from django.contrib.auth.models import User
 from .models import Profile
 from .models import VanRegistration
 from .formatters import validate_cpf_digits, validate_phone_digits
+
+VAN_EVENT_DATE = date(2026, 5, 30)
 
 
 class RegisterForm(forms.Form):
@@ -47,8 +51,6 @@ class VanRegistrationForm(forms.ModelForm):
             'minor_birth_date',
             'minor_cpf',
             'responsible_phone',
-            'event_start_date',
-            'event_end_date',
             'city',
             'signature_date',
         ]:
@@ -65,15 +67,11 @@ class VanRegistrationForm(forms.ModelForm):
             'minor_birth_date',
             'minor_cpf',
             'event_name',
-            'event_start_date',
-            'event_end_date',
             'health_info',
             'city',
             'signature_date',
         ]
         widgets = {
-            'event_start_date': forms.DateInput(attrs={'type': 'date'}),
-            'event_end_date': forms.DateInput(attrs={'type': 'date'}),
             'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
             'signature_date': forms.DateInput(attrs={'type': 'date'}),
             'health_info': forms.Textarea(attrs={'rows': 4}),
@@ -87,8 +85,6 @@ class VanRegistrationForm(forms.ModelForm):
             'minor_birth_date': 'Data de nascimento do adolescente',
             'minor_cpf': 'CPF do adolescente',
             'event_name': 'Nome do evento',
-            'event_start_date': 'Data inicial do evento',
-            'event_end_date': 'Data final do evento',
             'health_info': 'Informações importantes de saúde',
             'city': 'Cidade',
             'signature_date': 'Data do termo',
@@ -122,6 +118,8 @@ class VanRegistrationForm(forms.ModelForm):
         instance = getattr(self, 'existing_registration', None) or super().save(commit=False)
         for field, value in self.cleaned_data.items():
             setattr(instance, field, value)
+        instance.event_start_date = VAN_EVENT_DATE
+        instance.event_end_date = VAN_EVENT_DATE
         instance.transport_by = 'van'
         if commit:
             instance.save()

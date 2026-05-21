@@ -69,7 +69,7 @@
                 <dt>Nascimento</dt><dd>{{ item.minor_birth_date|date:'d/m/Y'|default:'Não informado' }}</dd>
                 <dt>CPF adolescente</dt><dd>{{ item.minor_cpf_formatted|default:'Não informado' }}</dd>
                 <dt>Evento</dt><dd>{{ item.event_name }}</dd>
-                <dt>Período</dt><dd>{{ item.event_start_date|date:'d/m/Y' }} a {{ item.event_end_date|date:'d/m/Y' }}</dd>
+                <dt>Data do evento</dt><dd>{{ item.event_start_date|date:'d/m/Y' }}</dd>
                 <dt>Saúde</dt><dd>{{ item.health_info|linebreaksbr|default:'Não informado' }}</dd>
                 <dt>Cidade/data</dt><dd>{{ item.city|default:'Não informado' }} - {{ item.signature_date|date:'d/m/Y' }}</dd>
                 <dt>Status</dt><dd>{{ item.get_status_display }}</dd>
