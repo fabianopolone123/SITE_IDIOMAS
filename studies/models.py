@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from django.conf import settings
@@ -90,3 +91,41 @@ class ReviewState(models.Model):
 
     def __str__(self):
         return f'{self.user} -> {self.phrase_id} em {self.due_at:%Y-%m-%d}'
+
+
+class VanRegistration(models.Model):
+    PENDING_SIGNATURE = 'pending_signature'
+    SIGNED_RECEIVED = 'signed_received'
+    STATUS_CHOICES = [
+        (PENDING_SIGNATURE, 'Falta enviar termo assinado'),
+        (SIGNED_RECEIVED, 'Inscricao da van feita'),
+    ]
+
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    responsible_name = models.CharField('nome do responsavel', max_length=180)
+    responsible_rg = models.CharField('RG do responsavel', max_length=40)
+    responsible_cpf = models.CharField('CPF do responsavel', max_length=20, db_index=True)
+    responsible_phone = models.CharField('telefone/WhatsApp', max_length=30, blank=True)
+    responsible_email = models.EmailField('email', blank=True)
+    minor_name = models.CharField('nome do menor', max_length=180)
+    minor_birth_date = models.DateField('data de nascimento do menor', db_index=True)
+    minor_document = models.CharField('RG/CPF do menor', max_length=60, blank=True)
+    transport_by = models.CharField('transporte realizado por', max_length=120, default='van')
+    signed_term = models.FileField('termo assinado', upload_to='inscricao_van/termos_assinados/', blank=True)
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=PENDING_SIGNATURE, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def mark_signed_if_needed(self):
+        if self.signed_term and self.status != self.SIGNED_RECEIVED:
+            self.status = self.SIGNED_RECEIVED
+
+    def save(self, *args, **kwargs):
+        self.mark_signed_if_needed()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.minor_name} - {self.responsible_name}'

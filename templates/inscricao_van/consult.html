@@ -1,0 +1,38 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Consultar inscricao{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card wide">
+        <a class="van-back" href="{% url 'van_home' %}">Voltar</a>
+        <p class="van-eyebrow">Consulta</p>
+        <h1>Consultar inscricao</h1>
+        <p class="van-muted">Informe o CPF do responsavel e a data de nascimento do menor.</p>
+
+        <form method="post" class="van-form consult">
+            {% csrf_token %}
+            {% for field in form %}
+                <label>
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                </label>
+            {% endfor %}
+            <button class="van-button primary" type="submit">Consultar</button>
+        </form>
+
+        {% if registration %}
+            <div class="van-result">
+                <h2>{{ registration.minor_name }}</h2>
+                <p>Status: <strong>{{ registration.get_status_display }}</strong></p>
+                {% if registration.signed_term %}
+                    <p class="van-ok">Termo assinado recebido.</p>
+                {% else %}
+                    <p class="van-warning">Falta enviar o termo assinado.</p>
+                    <a class="van-button secondary" href="{% url 'van_signature' registration.public_id %}">Enviar termo agora</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

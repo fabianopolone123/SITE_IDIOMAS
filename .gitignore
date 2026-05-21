@@ -9,7 +9,10 @@ __pycache__/
 db.sqlite3
 *.sqlite3
 media/
+!media/
+!media/.gitkeep
 staticfiles/
+WhatsApp Image*.jpeg
 
 # Virtual environments
 .venv/

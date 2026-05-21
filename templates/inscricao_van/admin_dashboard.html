@@ -1,0 +1,91 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Dashboard inscricoes{% endblock %}
+
+{% block content %}
+<main class="van-admin">
+    <header class="van-admin-head">
+        <div>
+            <p class="van-eyebrow">Inscricoes da van</p>
+            <h1>Dashboard</h1>
+        </div>
+        <div class="van-actions">
+            <a class="van-button secondary" href="{% url 'van_admin_download_all' %}">Baixar todos termos</a>
+            <a class="van-button ghost" href="{% url 'van_admin_logout' %}">Sair</a>
+        </div>
+    </header>
+
+    <section class="van-metrics">
+        <article><span>{{ totals.total }}</span><p>Total</p></article>
+        <article><span>{{ totals.signed }}</span><p>Com termo</p></article>
+        <article><span>{{ totals.pending }}</span><p>Pendentes</p></article>
+    </section>
+
+    <section class="van-table-wrap">
+        <table class="van-table">
+            <thead>
+                <tr>
+                    <th>Menor</th>
+                    <th>Responsavel</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in registrations %}
+                    <tr>
+                        <td>{{ item.minor_name }}</td>
+                        <td>{{ item.responsible_name }}</td>
+                        <td>{{ item.get_status_display }}</td>
+                        <td>{{ item.created_at|date:'d/m/Y H:i' }}</td>
+                        <td>
+                            <button class="van-link" type="button" data-modal-open="modal-{{ item.id }}">Ver resumo</button>
+                            {% if item.signed_term %}
+                                <a class="van-link" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Nenhuma inscricao encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    {% for item in registrations %}
+        <dialog class="van-dialog" id="modal-{{ item.id }}">
+            <h2>{{ item.minor_name }}</h2>
+            <dl>
+                <dt>Responsavel</dt><dd>{{ item.responsible_name }}</dd>
+                <dt>CPF</dt><dd>{{ item.responsible_cpf }}</dd>
+                <dt>RG responsavel</dt><dd>{{ item.responsible_rg }}</dd>
+                <dt>WhatsApp</dt><dd>{{ item.responsible_phone|default:'Nao informado' }}</dd>
+                <dt>Email</dt><dd>{{ item.responsible_email|default:'Nao informado' }}</dd>
+                <dt>Nascimento do menor</dt><dd>{{ item.minor_birth_date|date:'d/m/Y' }}</dd>
+                <dt>Documento do menor</dt><dd>{{ item.minor_document|default:'Nao informado' }}</dd>
+                <dt>Status</dt><dd>{{ item.get_status_display }}</dd>
+            </dl>
+            <div class="van-actions left">
+                {% if item.signed_term %}
+                    <a class="van-button primary" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo assinado</a>
+                {% endif %}
+                <button class="van-button secondary" type="button" data-modal-close>Fechar</button>
+            </div>
+        </dialog>
+    {% endfor %}
+</main>
+
+<script>
+document.querySelectorAll('[data-modal-open]').forEach((button) => {
+    button.addEventListener('click', () => {
+        document.getElementById(button.dataset.modalOpen).showModal();
+    });
+});
+document.querySelectorAll('[data-modal-close]').forEach((button) => {
+    button.addEventListener('click', () => {
+        button.closest('dialog').close();
+    });
+});
+</script>
+{% endblock %}

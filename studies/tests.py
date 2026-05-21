@@ -3,12 +3,13 @@ from io import StringIO
 
 from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
-from .models import Profile, ReviewState, StudyPhrase
+from .models import Profile, ReviewState, StudyPhrase, VanRegistration
 from .views import NEW_CARDS_BLOCK_SIZE
 
 
@@ -168,3 +169,65 @@ class ImportDeckTests(TestCase):
         self.assertEqual(review.phrase_id, phrase.id)
         self.assertEqual(review.repetitions, 5)
         self.assertEqual(phrase.italian_text, card['italian_text'])
+
+
+class VanRegistrationTests(TestCase):
+    def registration_payload(self):
+        return {
+            'responsible_name': 'Responsavel Teste',
+            'responsible_rg': '12.345.678-9',
+            'responsible_cpf': '12345678900',
+            'responsible_phone': '16999999999',
+            'responsible_email': 'responsavel@example.com',
+            'minor_name': 'Adolescente Teste',
+            'minor_birth_date': '2010-05-10',
+            'minor_document': '98765432100',
+            'transport_by': 'van',
+        }
+
+    def test_van_registration_creates_pending_record(self):
+        response = self.client.post(reverse('van_register'), self.registration_payload())
+
+        registration = VanRegistration.objects.get()
+        self.assertRedirects(response, reverse('van_signature', args=[registration.public_id]))
+        self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
+
+    def test_van_term_download_returns_pdf(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+
+        response = self.client.get(reverse('van_download_term', args=[registration.public_id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+    def test_van_upload_signed_term_marks_registration_complete(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+
+        response = self.client.post(
+            reverse('van_signature', args=[registration.public_id]),
+            {'signed_term': upload},
+        )
+
+        registration.refresh_from_db()
+        self.assertRedirects(response, reverse('van_success', args=[registration.public_id]))
+        self.assertEqual(registration.status, VanRegistration.SIGNED_RECEIVED)
+
+    def test_van_consult_finds_registration(self):
+        VanRegistration.objects.create(**self.registration_payload())
+
+        response = self.client.post(
+            reverse('van_consult'),
+            {'responsible_cpf': '12345678900', 'minor_birth_date': '2010-05-10'},
+        )
+
+        self.assertContains(response, 'Adolescente Teste')
+
+    def test_van_admin_requires_password_then_shows_dashboard(self):
+        VanRegistration.objects.create(**self.registration_payload())
+
+        login_response = self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        dashboard_response = self.client.get(reverse('van_admin_dashboard'))
+
+        self.assertRedirects(login_response, reverse('van_admin_dashboard'))
+        self.assertContains(dashboard_response, 'Adolescente Teste')

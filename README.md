@@ -21,6 +21,7 @@ regras para preservar progresso dos usuarios e comandos de manutencao.
 - Repeticao espacada com avaliacoes: Errei, Dificil, Bom e Facil.
 - Limite flexivel de 20 frases novas por dia, com confirmacao para continuar.
 - Baralho curado de frases em italiano com traducao e notas de estudo.
+- Area `/inscricao_van/` para inscricao da van do evento Passaporte.
 
 ## Como rodar
 
@@ -149,3 +150,38 @@ Para arquivos estaticos:
 ```bash
 python manage.py collectstatic
 ```
+
+## Area de inscricao da van
+
+Rotas principais:
+
+- `/inscricao_van/`: tela inicial com botoes Fazer inscricao e Consultar inscricao.
+- `/inscricao_van/fazer/`: formulario da autorizacao.
+- `/inscricao_van/consultar/`: consulta por CPF do responsavel e nascimento do menor.
+- `/inscricao_van/admin/`: dashboard simples protegido pela senha `1580`.
+
+O termo e gerado em PDF pelo sistema. A pessoa baixa, assina pelo gov.br e envia o PDF assinado.
+Uploads ficam em `media/inscricao_van/termos_assinados/`.
+
+Em producao, se este projeto ficar apenas no caminho `/inscricao_van/` de um dominio que ja tem
+outros projetos, configure no Nginx somente os caminhos deste projeto:
+
+```nginx
+location /inscricao_van/ {
+    proxy_pass http://unix:/run/site-idiomas.sock;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /static/inscricao_van/ {
+    alias /var/www/site_idiomas/staticfiles/inscricao_van/;
+}
+
+location /media/inscricao_van/ {
+    alias /var/www/site_idiomas/media/inscricao_van/;
+}
+```
+
+Assim voce nao altera os outros projetos que ja usam o mesmo dominio.

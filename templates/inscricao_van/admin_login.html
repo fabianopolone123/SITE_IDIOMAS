@@ -1,0 +1,25 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Admin inscricoes{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card login">
+        <p class="van-eyebrow">Area administrativa</p>
+        <h1>Entrar</h1>
+        <form method="post" class="van-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <label>
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <small class="van-error">{{ error }}</small>
+                    {% endfor %}
+                </label>
+            {% endfor %}
+            <button class="van-button primary" type="submit">Acessar dashboard</button>
+        </form>
+    </section>
+</main>
+{% endblock %}

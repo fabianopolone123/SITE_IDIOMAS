@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Profile, ReviewState, StudyPhrase
+from .models import Profile, ReviewState, StudyPhrase, VanRegistration
 
 
 @admin.register(Profile)
@@ -24,3 +24,11 @@ class ReviewStateAdmin(admin.ModelAdmin):
     list_display = ['user', 'phrase', 'due_at', 'interval_days', 'ease_factor', 'repetitions', 'lapses']
     list_filter = ['last_grade', 'due_at']
     search_fields = ['user__username', 'phrase__italian_text']
+
+
+@admin.register(VanRegistration)
+class VanRegistrationAdmin(admin.ModelAdmin):
+    list_display = ['minor_name', 'responsible_name', 'responsible_cpf', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['minor_name', 'responsible_name', 'responsible_cpf', 'minor_document']
+    readonly_fields = ['public_id', 'created_at', 'updated_at']

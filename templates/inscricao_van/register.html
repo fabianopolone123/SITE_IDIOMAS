@@ -1,0 +1,30 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Fazer inscricao{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card wide">
+        <a class="van-back" href="{% url 'van_home' %}">Voltar</a>
+        <p class="van-eyebrow">Autorizacao para viagem</p>
+        <h1>Dados do responsavel e do menor</h1>
+        <p class="van-muted">Preencha os dados para gerar o termo em PDF. Depois voce baixa, assina pelo gov.br e envia o arquivo assinado.</p>
+
+        <form method="post" class="van-form">
+            {% csrf_token %}
+            <div class="van-grid">
+                {% for field in form %}
+                    <label>
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <small class="van-error">{{ error }}</small>
+                        {% endfor %}
+                    </label>
+                {% endfor %}
+            </div>
+            <button class="van-button primary" type="submit">Proximo</button>
+        </form>
+    </section>
+</main>
+{% endblock %}

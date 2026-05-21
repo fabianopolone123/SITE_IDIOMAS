@@ -34,10 +34,13 @@ Fluxo principal do aluno:
 - `studies/models.py`: modelos de perfil, frases e progresso SRS.
 - `studies/views.py`: cadastro, login, dashboard, estudo, revisao e limite de cards novos.
 - `studies/forms.py`: formularios de cadastro/login.
+- `studies/van_pdf.py`: geracao do PDF da autorizacao da van.
 - `studies/alice_deck.py`: baralho curado versionado no Git.
 - `studies/management/commands/import_alice_phrases.py`: importa/atualiza cards no banco.
 - `templates/studies/study.html`: fluxo do card audio -> texto -> resposta.
 - `static/studies/speech.js`: leitura em voz alta no navegador.
+- `static/inscricao_van/van.css`: estilos da area de inscricao da van.
+- `static/inscricao_van/panfleto.jpeg`: panfleto usado como fundo/arte da inscricao.
 - `static/studies/styles.css`: layout responsivo.
 - `docs/PROJECT_CONTEXT.md`: este arquivo.
 
@@ -89,6 +92,21 @@ Campos importantes:
 
 `unique_together = ['user', 'phrase']` impede progresso duplicado para o mesmo card.
 
+### VanRegistration
+
+Representa uma inscricao/autorizacao da van no caminho `/inscricao_van/`.
+
+Campos importantes:
+
+- `public_id`: UUID usado nas URLs publicas sem expor ID sequencial.
+- dados do responsavel: nome, RG, CPF, WhatsApp e email.
+- dados do menor: nome, nascimento e RG/CPF se houver.
+- `transport_by`: texto usado no termo, padrao `van`.
+- `signed_term`: PDF assinado enviado pela pessoa.
+- `status`: `pending_signature` ou `signed_received`.
+
+Quando `signed_term` e enviado, o model marca status como `signed_received`.
+
 ## Algoritmo SRS atual
 
 Implementado em `ReviewState.schedule`.
@@ -132,6 +150,33 @@ Estados por querystring:
 - `?stage=answer`: mostra traducao, explicacao e botoes de avaliacao.
 
 O parametro antigo `?reveal=1` ainda e aceito e mapeado para `stage=answer`.
+
+## Area `/inscricao_van/`
+
+Objetivo: formulario de autorizacao para viagem de menor de idade para o evento
+"Passaporte: Sua Identidade em Alta Definicao".
+
+Rotas:
+
+- `/inscricao_van/`: landing com panfleto e botoes.
+- `/inscricao_van/fazer/`: cria a inscricao.
+- `/inscricao_van/termo/<uuid>/`: baixa termo e envia termo assinado.
+- `/inscricao_van/termo/<uuid>/baixar/`: gera PDF A4 do termo.
+- `/inscricao_van/consultar/`: consulta por CPF do responsavel + nascimento do menor.
+- `/inscricao_van/admin/`: login simples com senha `1580`.
+- `/inscricao_van/admin/dashboard/`: relatorio de inscricoes.
+- `/inscricao_van/admin/termos.zip`: baixa todos os termos assinados.
+
+O PDF e gerado com ReportLab em `studies/van_pdf.py`.
+
+Uploads ficam em:
+
+```text
+media/inscricao_van/termos_assinados/
+```
+
+Em producao, garantir que Nginx sirva esse caminho de media se o admin precisar baixar
+arquivos diretamente por URL ou se houver links futuros.
 
 ## Audio e pronuncia
 
@@ -215,6 +260,29 @@ Depois reiniciar o servico da aplicacao configurado na VPS, por exemplo Gunicorn
 
 Nao subir `db.sqlite3` para o Git. O banco da VPS deve ser persistente e independente.
 
+Se este projeto for colocado no mesmo dominio de outros projetos, por exemplo
+`fabianopolone.com.br/inscricao_van/`, nao crie um `location /` para ele. Use apenas:
+
+```nginx
+location /inscricao_van/ {
+    proxy_pass http://unix:/run/site-idiomas.sock;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+location /static/inscricao_van/ {
+    alias /var/www/site_idiomas/staticfiles/inscricao_van/;
+}
+
+location /media/inscricao_van/ {
+    alias /var/www/site_idiomas/media/inscricao_van/;
+}
+```
+
+Isso evita mexer nos outros tres projetos ja em producao no mesmo Nginx.
+
 ## Git
 
 Repositorio remoto:
@@ -248,6 +316,7 @@ git status --short
 
 - `db.sqlite3`
 - PDFs locais
+- imagem original local `WhatsApp Image*.jpeg`
 - caches Python
 - ambientes virtuais
 - `.env`
@@ -334,6 +403,11 @@ Cobre:
 - bypass da pausa com confirmacao;
 - importacao incremental preserva historico;
 - importacao por `deck_key` preserva historico mesmo se texto mudar.
+- criacao de inscricao da van;
+- download do termo em PDF;
+- upload do termo assinado;
+- consulta de inscricao;
+- login do dashboard da van.
 
 ## Estado atual do baralho
 

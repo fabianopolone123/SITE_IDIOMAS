@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
 from .models import Profile
+from .models import VanRegistration
 
 
 class RegisterForm(forms.Form):
@@ -36,3 +37,68 @@ class RegisterForm(forms.Form):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Username')
     password = forms.CharField(label='Senha', widget=forms.PasswordInput)
+
+
+class VanRegistrationForm(forms.ModelForm):
+    class Meta:
+        model = VanRegistration
+        fields = [
+            'responsible_name',
+            'responsible_rg',
+            'responsible_cpf',
+            'responsible_phone',
+            'responsible_email',
+            'minor_name',
+            'minor_birth_date',
+            'minor_document',
+            'transport_by',
+        ]
+        widgets = {
+            'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        labels = {
+            'responsible_name': 'Nome do pai/mae ou responsavel legal',
+            'responsible_rg': 'RG do responsavel',
+            'responsible_cpf': 'CPF do responsavel',
+            'responsible_phone': 'WhatsApp do responsavel',
+            'responsible_email': 'Email do responsavel',
+            'minor_name': 'Nome do(a) menor',
+            'minor_birth_date': 'Data de nascimento do(a) menor',
+            'minor_document': 'RG/CPF do(a) menor, se houver',
+            'transport_by': 'Transporte realizado por',
+        }
+
+
+class VanConsultForm(forms.Form):
+    responsible_cpf = forms.CharField(label='CPF do responsavel', max_length=20)
+    minor_birth_date = forms.DateField(
+        label='Data de nascimento do menor',
+        widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+
+
+class VanSignedTermForm(forms.ModelForm):
+    class Meta:
+        model = VanRegistration
+        fields = ['signed_term']
+        labels = {'signed_term': 'Enviar termo assinado em PDF'}
+
+    def clean_signed_term(self):
+        file = self.cleaned_data.get('signed_term')
+        if not file:
+            raise forms.ValidationError('Envie o termo assinado.')
+        if not file.name.lower().endswith('.pdf'):
+            raise forms.ValidationError('Envie um arquivo PDF.')
+        if file.size > 10 * 1024 * 1024:
+            raise forms.ValidationError('O arquivo deve ter no maximo 10 MB.')
+        return file
+
+
+class VanAdminLoginForm(forms.Form):
+    password = forms.CharField(label='Senha', widget=forms.PasswordInput)
+
+    def clean_password(self):
+        password = self.cleaned_data['password']
+        if password != '1580':
+            raise forms.ValidationError('Senha invalida.')
+        return password

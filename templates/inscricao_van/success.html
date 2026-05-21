@@ -1,0 +1,14 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Inscricao concluida{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card center">
+        <p class="van-eyebrow">Tudo certo</p>
+        <h1>Inscricao da van feita.</h1>
+        <p class="van-muted">Recebemos o termo assinado de {{ registration.minor_name }}.</p>
+        <a class="van-button primary" href="{% url 'van_home' %}">Voltar ao inicio</a>
+    </section>
+</main>
+{% endblock %}
