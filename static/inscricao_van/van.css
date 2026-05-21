@@ -172,6 +172,17 @@ img {
     line-height: 1.6;
 }
 
+.van-notice {
+    background: #f0f7ff;
+    border: 1px solid #cfe4ff;
+    border-radius: 8px;
+    color: #174466;
+    font-weight: 800;
+    line-height: 1.55;
+    margin: 18px 0 0;
+    padding: 14px 16px;
+}
+
 .van-back {
     color: var(--van-blue);
     display: inline-block;
