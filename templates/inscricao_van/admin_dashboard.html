@@ -43,6 +43,10 @@
                             <button class="van-link" type="button" data-modal-open="modal-{{ item.id }}">Ver resumo</button>
                             {% if item.signed_term %}
                                 <a class="van-link" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo</a>
+                                <form class="van-inline-form" method="post" action="{% url 'van_admin_reject_signed' item.public_id %}" data-confirm="Desaprovar este termo assinado? A inscricao voltara para pendente de envio.">
+                                    {% csrf_token %}
+                                    <button class="van-link danger" type="submit">Desaprovar</button>
+                                </form>
                             {% endif %}
                         </td>
                     </tr>
@@ -73,6 +77,10 @@
             <div class="van-actions left">
                 {% if item.signed_term %}
                     <a class="van-button primary" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo assinado</a>
+                    <form class="van-inline-form" method="post" action="{% url 'van_admin_reject_signed' item.public_id %}" data-confirm="Desaprovar este termo assinado? A inscricao voltara para pendente de envio.">
+                        {% csrf_token %}
+                        <button class="van-button danger" type="submit">Desaprovar termo</button>
+                    </form>
                 {% endif %}
                 <button class="van-button secondary" type="button" data-modal-close>Fechar</button>
             </div>
@@ -89,6 +97,13 @@ document.querySelectorAll('[data-modal-open]').forEach((button) => {
 document.querySelectorAll('[data-modal-close]').forEach((button) => {
     button.addEventListener('click', () => {
         button.closest('dialog').close();
+    });
+});
+document.querySelectorAll('[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
     });
 });
 </script>

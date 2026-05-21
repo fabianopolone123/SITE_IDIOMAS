@@ -363,3 +363,28 @@ class VanRegistrationTests(TestCase):
 
         self.assertRedirects(login_response, reverse('van_admin_dashboard'))
         self.assertContains(dashboard_response, 'Adolescente Teste')
+
+    def test_van_admin_can_reject_signed_term_and_restore_pending_upload(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+        registration.signed_term.save('termo.pdf', upload, save=True)
+        registration.refresh_from_db()
+        signed_name = registration.signed_term.name
+        storage = registration.signed_term.storage
+        self.assertEqual(registration.status, VanRegistration.SIGNED_RECEIVED)
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.post(reverse('van_admin_reject_signed', args=[registration.public_id]))
+
+        registration.refresh_from_db()
+        self.assertRedirects(response, reverse('van_admin_dashboard'))
+        self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
+        self.assertFalse(registration.signed_term)
+        self.assertFalse(storage.exists(signed_name))
+
+        consult_response = self.client.post(
+            reverse('van_consult'),
+            {'responsible_cpf': '123.456.789-00', 'minor_birth_date': '2010-05-10'},
+        )
+        self.assertContains(consult_response, 'Falta enviar termo assinado')
+        self.assertContains(consult_response, 'Enviar termo agora')

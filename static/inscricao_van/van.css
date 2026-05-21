@@ -9,6 +9,7 @@
     --van-blue: #0f5b85;
     --van-ok: #16714a;
     --van-warn: #a65b00;
+    --van-danger: #b42318;
 }
 
 * {
@@ -132,6 +133,11 @@ img {
     background: transparent;
     border-color: var(--van-line);
     color: var(--van-ink);
+}
+
+.van-button.danger {
+    background: var(--van-danger);
+    color: white;
 }
 
 .van-page,
@@ -369,6 +375,18 @@ input:focus {
     padding: 0;
     text-decoration: underline;
     touch-action: manipulation;
+}
+
+.van-link.danger {
+    color: var(--van-danger);
+}
+
+.van-inline-form {
+    display: inline;
+}
+
+.van-actions .van-inline-form {
+    display: inline-flex;
 }
 
 .van-dialog {

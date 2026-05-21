@@ -24,5 +24,10 @@ urlpatterns = [
     path('inscricao_van/admin/dashboard/', views.van_admin_dashboard, name='van_admin_dashboard'),
     path('inscricao_van/admin/sair/', views.van_admin_logout, name='van_admin_logout'),
     path('inscricao_van/admin/termo/<uuid:public_id>/', views.van_admin_download_signed, name='van_admin_download_signed'),
+    path(
+        'inscricao_van/admin/termo/<uuid:public_id>/desaprovar/',
+        views.van_admin_reject_signed,
+        name='van_admin_reject_signed',
+    ),
     path('inscricao_van/admin/termos.zip', views.van_admin_download_all, name='van_admin_download_all'),
 ]

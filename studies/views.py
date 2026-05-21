@@ -429,6 +429,21 @@ def van_admin_download_signed(request, public_id):
     return FileResponse(registration.signed_term.open('rb'), as_attachment=True, filename=filename)
 
 
+@require_POST
+def van_admin_reject_signed(request, public_id):
+    require_van_admin(request)
+    registration = get_object_or_404(VanRegistration, public_id=public_id)
+    if registration.signed_term:
+        registration.signed_term.delete(save=False)
+    registration.status = VanRegistration.PENDING_SIGNATURE
+    registration.save(update_fields=['signed_term', 'status', 'updated_at'])
+    messages.success(
+        request,
+        'Termo assinado desaprovado. A inscricao voltou para pendente de envio.',
+    )
+    return redirect('van_admin_dashboard')
+
+
 def van_admin_download_all(request):
     require_van_admin(request)
     response = HttpResponse(content_type='application/zip')
