@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .models import Profile, ReviewState, StudyPhrase, VanRegistration
@@ -221,6 +222,23 @@ class VanRegistrationTests(TestCase):
         registration.refresh_from_db()
         self.assertRedirects(response, reverse('van_success', args=[registration.public_id]))
         self.assertEqual(registration.status, VanRegistration.SIGNED_RECEIVED)
+        self.assertEqual(registration.signed_term.name, f'inscricao_van/termos_assinados/{registration.public_id}.pdf')
+
+    def test_van_upload_storage_error_returns_form_with_message(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+
+        with patch('studies.views.VanSignedTermForm.save', side_effect=OSError):
+            response = self.client.post(
+                reverse('van_signature', args=[registration.public_id]),
+                {'signed_term': upload},
+                follow=True,
+            )
+
+        registration.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Não foi possível salvar o termo assinado agora')
+        self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
 
     def test_van_consult_finds_registration(self):
         VanRegistration.objects.create(**self.registration_payload())

@@ -213,8 +213,15 @@ def van_signature(request, public_id):
     registration = get_object_or_404(VanRegistration, public_id=public_id)
     form = VanSignedTermForm(request.POST or None, request.FILES or None, instance=registration)
     if request.method == 'POST' and form.is_valid():
-        form.save()
-        return redirect('van_success', public_id=registration.public_id)
+        try:
+            form.save()
+        except OSError:
+            messages.error(
+                request,
+                'Não foi possível salvar o termo assinado agora. Tente novamente em instantes ou avise a organização.',
+            )
+        else:
+            return redirect('van_success', public_id=registration.public_id)
     return render(request, 'inscricao_van/signature.html', {'registration': registration, 'form': form})
 
 

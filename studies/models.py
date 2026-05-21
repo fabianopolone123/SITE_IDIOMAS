@@ -93,6 +93,10 @@ class ReviewState(models.Model):
         return f'{self.user} -> {self.phrase_id} em {self.due_at:%Y-%m-%d}'
 
 
+def van_signed_term_upload_path(instance, filename):
+    return f'inscricao_van/termos_assinados/{instance.public_id}.pdf'
+
+
 class VanRegistration(models.Model):
     PENDING_SIGNATURE = 'pending_signature'
     SIGNED_RECEIVED = 'signed_received'
@@ -111,7 +115,7 @@ class VanRegistration(models.Model):
     minor_birth_date = models.DateField('data de nascimento do menor', db_index=True)
     minor_document = models.CharField('RG/CPF do menor', max_length=60, blank=True)
     transport_by = models.CharField('transporte realizado por', max_length=120, default='van')
-    signed_term = models.FileField('termo assinado', upload_to='inscricao_van/termos_assinados/', blank=True)
+    signed_term = models.FileField('termo assinado', upload_to=van_signed_term_upload_path, blank=True)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=PENDING_SIGNATURE, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
