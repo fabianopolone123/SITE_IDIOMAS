@@ -40,6 +40,12 @@ class LoginForm(AuthenticationForm):
 
 
 class VanRegistrationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['transport_by'].initial = 'van'
+        self.fields['transport_by'].disabled = True
+        self.fields['transport_by'].widget.attrs.update({'readonly': 'readonly'})
+
     class Meta:
         model = VanRegistration
         fields = [
@@ -67,6 +73,14 @@ class VanRegistrationForm(forms.ModelForm):
             'minor_document': 'RG/CPF do(a) menor, se houver',
             'transport_by': 'Transporte realizado por',
         }
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.transport_by = 'van'
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 
 
 class VanConsultForm(forms.Form):

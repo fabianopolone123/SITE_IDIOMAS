@@ -192,6 +192,15 @@ class VanRegistrationTests(TestCase):
         self.assertRedirects(response, reverse('van_signature', args=[registration.public_id]))
         self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
 
+    def test_van_transport_is_forced_to_van(self):
+        payload = self.registration_payload()
+        payload['transport_by'] = 'outro transporte'
+
+        self.client.post(reverse('van_register'), payload)
+
+        registration = VanRegistration.objects.get()
+        self.assertEqual(registration.transport_by, 'van')
+
     def test_van_term_download_returns_pdf(self):
         registration = VanRegistration.objects.create(**self.registration_payload())
 
