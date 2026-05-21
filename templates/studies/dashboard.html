@@ -24,7 +24,7 @@
     </article>
     <article>
         <span>{{ new_available }}</span>
-        <p>frases novas disponiveis</p>
+        <p>frases novas disponíveis</p>
     </article>
     <article>
         <span>{{ new_today }}/{{ new_cards_block_size }}</span>
@@ -34,7 +34,7 @@
 
 <section class="content-grid">
     <article class="panel">
-        <h2>Proxima revisao</h2>
+        <h2>Próxima revisão</h2>
         {% if due_count %}
             <p class="big-number">{{ due_count }}</p>
             <p>cartao{% if due_count != 1 %}s{% endif %} pronto{% if due_count != 1 %}s{% endif %} agora.</p>
@@ -44,12 +44,12 @@
             <p>Nenhum cartao vencido neste momento.</p>
         {% else %}
             <p class="big-number">Novo</p>
-            <p>Clique em comecar para iniciar a primeira frase.</p>
+            <p>Clique em começar para iniciar a primeira frase.</p>
         {% endif %}
     </article>
 
     <article class="panel">
-        <h2>Ultimas revisoes</h2>
+        <h2>Últimas revisões</h2>
         {% if recent_reviews %}
             <ul class="review-list">
                 {% for review in recent_reviews %}

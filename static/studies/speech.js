@@ -11,7 +11,7 @@
     }
 
     if (!synth || buttons.length === 0) {
-        setStatus('Seu navegador nao oferece leitura em voz alta nesta tela.');
+        setStatus('Seu navegador não oferece leitura em voz alta nesta tela.');
         buttons.forEach((button) => {
             button.disabled = true;
         });
@@ -89,7 +89,7 @@
         utterance.onerror = function () {
             button.classList.remove('is-playing');
             button.removeAttribute('aria-busy');
-            setStatus('Nao foi possivel tocar o audio agora. Tente novamente.');
+            setStatus('Não foi possível tocar o áudio agora. Tente novamente.');
         };
 
         synth.speak(utterance);

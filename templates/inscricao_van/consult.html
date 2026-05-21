@@ -1,14 +1,14 @@
 {% extends 'inscricao_van/base.html' %}
 
-{% block title %}Consultar inscricao{% endblock %}
+{% block title %}Consultar inscrição{% endblock %}
 
 {% block content %}
 <main class="van-page">
     <section class="van-card wide">
         <a class="van-back" href="{% url 'van_home' %}">Voltar</a>
         <p class="van-eyebrow">Consulta</p>
-        <h1>Consultar inscricao</h1>
-        <p class="van-muted">Informe o CPF do responsavel e a data de nascimento do menor.</p>
+        <h1>Consultar inscrição</h1>
+        <p class="van-muted">Informe o CPF do responsável e a data de nascimento do menor.</p>
 
         <form method="post" class="van-form consult">
             {% csrf_token %}

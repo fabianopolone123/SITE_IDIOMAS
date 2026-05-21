@@ -98,13 +98,13 @@ class VanRegistration(models.Model):
     SIGNED_RECEIVED = 'signed_received'
     STATUS_CHOICES = [
         (PENDING_SIGNATURE, 'Falta enviar termo assinado'),
-        (SIGNED_RECEIVED, 'Inscricao da van feita'),
+        (SIGNED_RECEIVED, 'Inscrição da van feita'),
     ]
 
     public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    responsible_name = models.CharField('nome do responsavel', max_length=180)
-    responsible_rg = models.CharField('RG do responsavel', max_length=40)
-    responsible_cpf = models.CharField('CPF do responsavel', max_length=20, db_index=True)
+    responsible_name = models.CharField('nome do responsável', max_length=180)
+    responsible_rg = models.CharField('RG do responsável', max_length=40)
+    responsible_cpf = models.CharField('CPF do responsável', max_length=20, db_index=True)
     responsible_phone = models.CharField('telefone/WhatsApp', max_length=30, blank=True)
     responsible_email = models.EmailField('email', blank=True)
     minor_name = models.CharField('nome do menor', max_length=180)

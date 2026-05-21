@@ -16,7 +16,7 @@ class RegisterForm(forms.Form):
     def clean_username(self):
         username = self.cleaned_data['username'].strip()
         if User.objects.filter(username__iexact=username).exists():
-            raise forms.ValidationError('Esse username ja esta em uso.')
+            raise forms.ValidationError('Esse username já está em uso.')
         return username
 
     def save(self):
@@ -63,11 +63,11 @@ class VanRegistrationForm(forms.ModelForm):
             'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
         labels = {
-            'responsible_name': 'Nome do pai/mae ou responsavel legal',
-            'responsible_rg': 'RG do responsavel',
-            'responsible_cpf': 'CPF do responsavel',
-            'responsible_phone': 'WhatsApp do responsavel',
-            'responsible_email': 'Email do responsavel',
+            'responsible_name': 'Nome do pai/mãe ou responsável legal',
+            'responsible_rg': 'RG do responsável',
+            'responsible_cpf': 'CPF do responsável',
+            'responsible_phone': 'WhatsApp do responsável',
+            'responsible_email': 'Email do responsável',
             'minor_name': 'Nome do(a) menor',
             'minor_birth_date': 'Data de nascimento do(a) menor',
             'minor_document': 'RG/CPF do(a) menor, se houver',
@@ -84,7 +84,7 @@ class VanRegistrationForm(forms.ModelForm):
 
 
 class VanConsultForm(forms.Form):
-    responsible_cpf = forms.CharField(label='CPF do responsavel', max_length=20)
+    responsible_cpf = forms.CharField(label='CPF do responsável', max_length=20)
     minor_birth_date = forms.DateField(
         label='Data de nascimento do menor',
         widget=forms.DateInput(attrs={'type': 'date'}),
@@ -104,7 +104,7 @@ class VanSignedTermForm(forms.ModelForm):
         if not file.name.lower().endswith('.pdf'):
             raise forms.ValidationError('Envie um arquivo PDF.')
         if file.size > 10 * 1024 * 1024:
-            raise forms.ValidationError('O arquivo deve ter no maximo 10 MB.')
+            raise forms.ValidationError('O arquivo deve ter no máximo 10 MB.')
         return file
 
 
@@ -114,5 +114,5 @@ class VanAdminLoginForm(forms.Form):
     def clean_password(self):
         password = self.cleaned_data['password']
         if password != '1580':
-            raise forms.ValidationError('Senha invalida.')
+            raise forms.ValidationError('Senha inválida.')
         return password

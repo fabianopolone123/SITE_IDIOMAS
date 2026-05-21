@@ -1,18 +1,18 @@
 {% extends 'inscricao_van/base.html' %}
 {% load static %}
 
-{% block title %}Inscricao Van - Passaporte{% endblock %}
+{% block title %}Inscrição Van - Passaporte{% endblock %}
 
 {% block content %}
 <main class="van-hero" style="--poster: url('{% static 'inscricao_van/panfleto.jpeg' %}')">
     <section class="van-hero-content">
         <div class="van-copy">
-            <p class="van-eyebrow">30/05/2026 - CATRE Analandia</p>
-            <h1>Passaporte: Sua Identidade em Alta Definicao</h1>
-            <p>Inscricao para autorizacao de viagem de menor de idade em van.</p>
+            <p class="van-eyebrow">30/05/2026 - CATRE Analândia</p>
+            <h1>Passaporte: Sua Identidade em Alta Definição</h1>
+            <p>Inscrição para autorização de viagem de menor de idade em van.</p>
             <div class="van-actions">
-                <a class="van-button primary" href="{% url 'van_register' %}">Fazer inscricao</a>
-                <a class="van-button secondary" href="{% url 'van_consult' %}">Consultar inscricao</a>
+                <a class="van-button primary" href="{% url 'van_register' %}">Fazer inscrição</a>
+                <a class="van-button secondary" href="{% url 'van_consult' %}">Consultar inscrição</a>
             </div>
         </div>
         <img class="van-poster" src="{% static 'inscricao_van/panfleto.jpeg' %}" alt="Panfleto do evento Passaporte">

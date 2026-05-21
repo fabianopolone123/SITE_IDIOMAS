@@ -5,10 +5,10 @@
 {% block content %}
 <main class="van-page">
     <section class="van-card wide">
-        <a class="van-back" href="{% url 'van_home' %}">Inicio</a>
+        <a class="van-back" href="{% url 'van_home' %}">Início</a>
         <p class="van-eyebrow">Passo final</p>
         <h1>Baixe, assine e envie o termo</h1>
-        <p class="van-muted">Inscricao de {{ registration.minor_name }}. O termo precisa ser enviado assinado para concluir a inscricao da van.</p>
+        <p class="van-muted">Inscrição de {{ registration.minor_name }}. O termo precisa ser enviado assinado para concluir a inscrição da van.</p>
 
         <div class="van-actions left">
             <a class="van-button primary" href="{% url 'van_download_term' registration.public_id %}">Baixar termo para assinatura</a>
@@ -17,15 +17,15 @@
         <article class="van-tutorial">
             <h2>Mini tutorial para assinar pelo gov.br</h2>
             <ol>
-                <li>Acesse o portal oficial de assinatura eletronica do gov.br ou o Assinador em assinador.iti.br.</li>
+                <li>Acesse o portal oficial de assinatura eletrônica do gov.br ou o Assinador em assinador.iti.br.</li>
                 <li>Entre com CPF e senha da conta gov.br. A conta precisa ser prata ou ouro.</li>
                 <li>Clique em escolher arquivo e envie o PDF baixado aqui.</li>
                 <li>Escolha no documento o local onde a assinatura deve aparecer.</li>
                 <li>Clique em assinar digitalmente e autorize pelo aplicativo gov.br quando solicitado.</li>
-                <li>Baixe o PDF assinado. Nao use imprimir para salvar, pois isso pode remover a assinatura digital.</li>
+                <li>Baixe o PDF assinado. Não use imprimir para salvar, pois isso pode remover a assinatura digital.</li>
                 <li>Volte para esta tela e envie o PDF assinado.</li>
             </ol>
-            <p>Fontes oficiais: gov.br Assinatura Eletronica e servico Realizar a Assinatura Eletronica de documentos.</p>
+            <p>Fontes oficiais: gov.br Assinatura Eletrônica e serviço Realizar a Assinatura Eletrônica de documentos.</p>
         </article>
 
         <form method="post" enctype="multipart/form-data" class="van-form upload">

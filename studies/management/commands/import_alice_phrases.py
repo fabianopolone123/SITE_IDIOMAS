@@ -12,7 +12,7 @@ from studies.models import StudyPhrase
 COMMON_WORDS = {
     'alice': 'nome da personagem',
     'coniglio': 'coelho',
-    'sorella': 'irma',
+    'sorella': 'irmã',
     'libro': 'livro',
     'figure': 'figuras',
     'domande': 'perguntas',
@@ -40,12 +40,12 @@ class Command(BaseCommand):
     help = 'Importa frases curtas do PDF local de Alice para o banco de estudos.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--pdf', type=str, help='Caminho do PDF. Por padrao usa o primeiro PDF da pasta do projeto.')
-        parser.add_argument('--limit', type=int, default=len(ALICE_CARDS), help='Quantidade maxima de frases a importar.')
+        parser.add_argument('--pdf', type=str, help='Caminho do PDF. Por padrão usa o primeiro PDF da pasta do projeto.')
+        parser.add_argument('--limit', type=int, default=len(ALICE_CARDS), help='Quantidade máxima de frases a importar.')
         parser.add_argument(
             '--reset',
             action='store_true',
-            help='PERIGOSO: remove frases existentes e apaga o historico de revisao ligado a elas.',
+            help='PERIGOSO: remove frases existentes e apaga o histórico de revisão ligado a elas.',
         )
         parser.add_argument('--from-pdf', action='store_true', help='Extrai automaticamente do PDF em vez de usar frases curtas curadas.')
 
@@ -74,9 +74,9 @@ class Command(BaseCommand):
 
         created, updated = self.upsert_phrases(phrases, reset=options['reset'])
 
-        suffix = 'historico preservado' if not options['reset'] else 'historico apagado por --reset'
+        suffix = 'histórico preservado' if not options['reset'] else 'histórico apagado por --reset'
         self.stdout.write(
-            self.style.SUCCESS(f'Importacao de {source_name}: {created} criadas, {updated} atualizadas, {suffix}.')
+            self.style.SUCCESS(f'Importação de {source_name}: {created} criadas, {updated} atualizadas, {suffix}.')
         )
 
     def upsert_phrases(self, phrases, reset=False):
@@ -146,7 +146,7 @@ class Command(BaseCommand):
             path = pdfs[0]
 
         if not path.exists():
-            raise CommandError(f'PDF nao encontrado: {path}')
+            raise CommandError(f'PDF não encontrado: {path}')
         return path
 
     def extract_phrases(self, pdf_path, limit):
@@ -211,7 +211,7 @@ class Command(BaseCommand):
 
         vocabulary = '; '.join(matches) if matches else 'marque palavras conhecidas e tente inferir o restante pelo contexto'
         return (
-            'Antes de avaliar, diga em voz alta o sentido geral da frase em portugues.\n'
+            'Antes de avaliar, diga em voz alta o sentido geral da frase em português.\n'
             f'Vocabulário de apoio: {vocabulary}.\n'
-            'Observe a ordem das palavras, o verbo principal e uma expressao que voce conseguiria reutilizar.'
+            'Observe a ordem das palavras, o verbo principal e uma expressão que você conseguiria reutilizar.'
         )

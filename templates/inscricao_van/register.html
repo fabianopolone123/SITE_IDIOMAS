@@ -1,14 +1,14 @@
 {% extends 'inscricao_van/base.html' %}
 
-{% block title %}Fazer inscricao{% endblock %}
+{% block title %}Fazer inscrição{% endblock %}
 
 {% block content %}
 <main class="van-page">
     <section class="van-card wide">
         <a class="van-back" href="{% url 'van_home' %}">Voltar</a>
-        <p class="van-eyebrow">Autorizacao para viagem</p>
-        <h1>Dados do responsavel e do menor</h1>
-        <p class="van-muted">Preencha os dados para gerar o termo em PDF. Depois voce baixa, assina pelo gov.br e envia o arquivo assinado.</p>
+        <p class="van-eyebrow">Autorização para viagem</p>
+        <h1>Dados do responsável e do menor</h1>
+        <p class="van-muted">Preencha os dados para gerar o termo em PDF. Depois você baixa, assina pelo gov.br e envia o arquivo assinado.</p>
 
         <form method="post" class="van-form">
             {% csrf_token %}
@@ -23,7 +23,7 @@
                     </label>
                 {% endfor %}
             </div>
-            <button class="van-button primary" type="submit">Proximo</button>
+            <button class="van-button primary" type="submit">Próximo</button>
         </form>
     </section>
 </main>

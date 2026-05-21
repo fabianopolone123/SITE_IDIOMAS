@@ -34,7 +34,7 @@
         {% else %}
             <div class="phrase-head">
                 <div>
-                    <p class="prompt-label">Leia a frase em italiano, repita em voz alta e tente lembrar a traducao.</p>
+                    <p class="prompt-label">Leia a frase em italiano, repita em voz alta e tente lembrar a tradução.</p>
                     <p class="audio-help compact" data-voice-status>Toque em Play para ouvir a pronuncia.</p>
                 </div>
                 <button
@@ -51,8 +51,8 @@
 
         {% if stage == 'answer' %}
             <div class="translation">
-                <span>Traducao</span>
-                <p>{{ state.phrase.portuguese_text|default:'Traducao ainda nao cadastrada para esta frase.' }}</p>
+                <span>Tradução</span>
+                <p>{{ state.phrase.portuguese_text|default:'Tradução ainda não cadastrada para esta frase.' }}</p>
             </div>
 
             <div class="answer">
@@ -70,15 +70,15 @@
                     <span>volta em 10 min</span>
                 </button>
                 <button type="submit" name="grade" value="hard">
-                    <strong>Dificil</strong>
-                    <span>rever amanha</span>
+                    <strong>Difícil</strong>
+                    <span>rever amanhã</span>
                 </button>
                 <button type="submit" name="grade" value="good">
                     <strong>Bom</strong>
                     <span>intervalo cresce</span>
                 </button>
                 <button type="submit" name="grade" value="easy">
-                    <strong>Facil</strong>
+                    <strong>Fácil</strong>
                     <span>espacar mais</span>
                 </button>
             </form>

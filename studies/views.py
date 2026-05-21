@@ -37,7 +37,7 @@ def register(request):
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user)
-        messages.success(request, 'Conta criada. Ja da para comecar os estudos.')
+        messages.success(request, 'Conta criada. Já dá para começar os estudos.')
         return redirect('dashboard')
 
     return render(request, 'studies/register.html', {'form': form})
@@ -129,8 +129,8 @@ def due_reviews(request):
             request,
             'studies/no_cards.html',
             {
-                'title': 'Revisoes concluidas',
-                'message': 'Nao ha revisoes vencidas agora. Voce pode voltar ao dashboard ou iniciar cards novos.',
+                'title': 'Revisões concluídas',
+                'message': 'Não há revisões vencidas agora. Você pode voltar ao dashboard ou iniciar cards novos.',
             },
         )
 
@@ -150,12 +150,12 @@ def review(request, state_id):
     grade = request.POST.get('grade')
     valid_grades = {choice[0] for choice in ReviewState.GRADE_CHOICES}
     if grade not in valid_grades:
-        messages.error(request, 'Escolha uma nota valida para a revisao.')
+        messages.error(request, 'Escolha uma nota válida para a revisão.')
         return redirect('study')
 
     state.schedule(grade)
     state.save()
-    messages.success(request, 'Revisao registrada. A proxima data foi recalculada.')
+    messages.success(request, 'Revisão registrada. A próxima data foi recalculada.')
     if request.POST.get('review_only') == '1':
         return redirect('due_reviews')
     return redirect('study')
@@ -243,7 +243,7 @@ def van_consult(request):
             .first()
         )
         if registration is None:
-            messages.error(request, 'Inscricao nao encontrada com esses dados.')
+            messages.error(request, 'Inscrição não encontrada com esses dados.')
     return render(request, 'inscricao_van/consult.html', {'form': form, 'registration': registration})
 
 
