@@ -35,11 +35,11 @@
             <tbody>
                 {% for item in registrations %}
                     <tr>
-                        <td>{{ item.minor_name }}</td>
-                        <td>{{ item.responsible_name }}</td>
-                        <td>{{ item.get_status_display }}</td>
-                        <td>{{ item.created_at|date:'d/m/Y H:i' }}</td>
-                        <td>
+                        <td data-label="Menor">{{ item.minor_name }}</td>
+                        <td data-label="Responsavel">{{ item.responsible_name }}</td>
+                        <td data-label="Status">{{ item.get_status_display }}</td>
+                        <td data-label="Data">{{ item.created_at|date:'d/m/Y H:i' }}</td>
+                        <td data-label="Acoes">
                             <button class="van-link" type="button" data-modal-open="modal-{{ item.id }}">Ver resumo</button>
                             {% if item.signed_term %}
                                 <a class="van-link" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo</a>
