@@ -24,8 +24,19 @@
                     </label>
                 {% endfor %}
             </div>
-            <button class="van-button primary" type="submit">Próximo</button>
+            <button class="van-button primary" type="submit" data-submit-once>Próximo</button>
         </form>
     </section>
 </main>
+<script>
+document.querySelectorAll('form').forEach((form) => {
+    form.addEventListener('submit', () => {
+        const button = form.querySelector('[data-submit-once]');
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Enviando...';
+        }
+    });
+});
+</script>
 {% endblock %}

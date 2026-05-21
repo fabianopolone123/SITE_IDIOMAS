@@ -119,11 +119,12 @@ class VanRegistrationForm(forms.ModelForm):
             raise forms.ValidationError(str(exc)) from exc
 
     def save(self, commit=True):
-        instance = super().save(commit=False)
+        instance = getattr(self, 'existing_registration', None) or super().save(commit=False)
+        for field, value in self.cleaned_data.items():
+            setattr(instance, field, value)
         instance.transport_by = 'van'
         if commit:
             instance.save()
-            self.save_m2m()
         return instance
 
 

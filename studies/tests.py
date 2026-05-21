@@ -258,6 +258,27 @@ class VanRegistrationTests(TestCase):
         self.assertEqual(registration.responsible_phone, '16999999999')
         self.assertEqual(registration.responsible_phone_alt, '1633334444')
 
+    def test_van_registration_reuses_pending_record_for_double_submit(self):
+        first_response = self.client.post(reverse('van_register'), self.registration_payload())
+        payload = self.registration_payload()
+        payload['responsible_phone_alt'] = '(16) 5555-6666'
+        second_response = self.client.post(reverse('van_register'), payload)
+
+        registration = VanRegistration.objects.get()
+        self.assertRedirects(first_response, reverse('van_signature', args=[registration.public_id]))
+        self.assertRedirects(second_response, reverse('van_signature', args=[registration.public_id]))
+        self.assertEqual(VanRegistration.objects.count(), 1)
+        self.assertEqual(registration.responsible_phone_alt, '1655556666')
+
+    def test_van_registration_allows_new_record_after_signed_term_received(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+        registration.status = VanRegistration.SIGNED_RECEIVED
+        registration.save(update_fields=['status'])
+
+        self.client.post(reverse('van_register'), self.registration_payload())
+
+        self.assertEqual(VanRegistration.objects.count(), 2)
+
     def test_van_transport_is_forced_to_van(self):
         payload = self.registration_payload()
         payload['transport_by'] = 'outro transporte'

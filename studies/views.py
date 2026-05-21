@@ -320,9 +320,24 @@ def van_home(request):
 def van_register(request):
     form = VanRegistrationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
+        existing_registration = find_existing_pending_registration(form)
+        if existing_registration:
+            form.existing_registration = existing_registration
         registration = form.save()
         return redirect('van_signature', public_id=registration.public_id)
     return render(request, 'inscricao_van/register.html', {'form': form})
+
+
+def find_existing_pending_registration(form):
+    return (
+        VanRegistration.objects.filter(
+            responsible_cpf=form.cleaned_data['responsible_cpf'],
+            minor_birth_date=form.cleaned_data['minor_birth_date'],
+            status=VanRegistration.PENDING_SIGNATURE,
+        )
+        .order_by('-created_at')
+        .first()
+    )
 
 
 def van_signature(request, public_id):
