@@ -32,6 +32,32 @@
     </article>
 </section>
 
+<section class="deck-grid">
+    <article class="panel deck-panel">
+        <p class="eyebrow">Livro guiado</p>
+        <h2>Alice em italiano</h2>
+        <p class="muted">{{ alice_stats.studied_count }} estudadas de {{ alice_stats.total_phrases }}. {{ alice_stats.due_count }} revisão{% if alice_stats.due_count != 1 %}ões{% endif %} vencida{% if alice_stats.due_count != 1 %}s{% endif %}.</p>
+        <div class="actions">
+            {% if alice_stats.due_count %}
+                <a class="button secondary" href="{% url 'due_reviews' %}">Revisar Alice</a>
+            {% endif %}
+            <a class="button primary" href="{% url 'study' %}">Estudar Alice</a>
+        </div>
+    </article>
+
+    <article class="panel deck-panel">
+        <p class="eyebrow">Entrevista de TI</p>
+        <h2>Italiano para tecnologia</h2>
+        <p class="muted">{{ tech_stats.studied_count }} estudadas de {{ tech_stats.total_phrases }}. {{ tech_stats.due_count }} revisão{% if tech_stats.due_count != 1 %}ões{% endif %} vencida{% if tech_stats.due_count != 1 %}s{% endif %}. Errou, volta na hora para treinar até fixar.</p>
+        <div class="actions">
+            {% if tech_stats.due_count %}
+                <a class="button secondary" href="{% url 'tech_due_reviews' %}">Revisar TI</a>
+            {% endif %}
+            <a class="button primary" href="{% url 'tech_study' %}">Estudar TI</a>
+        </div>
+    </article>
+</section>
+
 <section class="content-grid">
     <article class="panel">
         <h2>Próxima revisão</h2>

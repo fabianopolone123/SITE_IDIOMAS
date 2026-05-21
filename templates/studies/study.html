@@ -7,7 +7,7 @@
 <section class="study-shell">
     <div class="study-card">
         <div class="card-meta">
-            <span>{{ state.phrase.chapter|default:'Alice' }}</span>
+            <span>{{ state.phrase.chapter|default:deck_label }}</span>
             <span>Intervalo atual: {{ state.interval_days }} dia{% if state.interval_days != 1 %}s{% endif %}</span>
         </div>
 
@@ -26,11 +26,7 @@
                 <p class="audio-help" data-voice-status>Usando a voz italiana disponivel no seu navegador.</p>
             </div>
 
-            {% if review_only %}
-                <a class="button primary" href="{% url 'due_reviews' %}?stage=text">Mostrar frase</a>
-            {% else %}
-                <a class="button primary" href="{% url 'study' %}?stage=text">Mostrar frase</a>
-            {% endif %}
+            <a class="button primary" href="{% if review_only %}{% url due_url_name %}{% else %}{% url study_url_name %}{% endif %}?stage=text">Mostrar frase</a>
         {% else %}
             <div class="phrase-head">
                 <div>
@@ -60,14 +56,14 @@
                 <p>{{ state.phrase.study_note|linebreaksbr }}</p>
             </div>
 
-            <form class="grade-grid" method="post" action="{% url 'review' state.id %}">
+            <form class="grade-grid" method="post" action="{% url review_url_name state.id %}">
                 {% csrf_token %}
                 {% if review_only %}
                     <input type="hidden" name="review_only" value="1">
                 {% endif %}
                 <button type="submit" name="grade" value="again">
                     <strong>Errei</strong>
-                    <span>volta em 10 min</span>
+                    <span>{{ again_label }}</span>
                 </button>
                 <button type="submit" name="grade" value="hard">
                     <strong>Difícil</strong>
@@ -83,11 +79,7 @@
                 </button>
             </form>
         {% else %}
-            {% if review_only %}
-                <a class="button primary" href="{% url 'due_reviews' %}?stage=answer">Mostrar resposta</a>
-            {% else %}
-                <a class="button primary" href="{% url 'study' %}?stage=answer">Mostrar resposta</a>
-            {% endif %}
+            <a class="button primary" href="{% if review_only %}{% url due_url_name %}{% else %}{% url study_url_name %}{% endif %}?stage=answer">Mostrar resposta</a>
         {% endif %}
         {% endif %}
     </div>

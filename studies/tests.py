@@ -10,6 +10,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
+from .tech_deck import iter_tech_cards
 from .models import Profile, ReviewState, StudyPhrase, VanRegistration
 from .views import NEW_CARDS_BLOCK_SIZE
 
@@ -17,7 +18,11 @@ from .views import NEW_CARDS_BLOCK_SIZE
 class ReviewStateTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='ana', password='123')
-        self.phrase = StudyPhrase.objects.create(order=1, italian_text='Alice guardo il coniglio bianco.')
+        self.phrase = StudyPhrase.objects.create(
+            deck_key='alice-test-review',
+            order=1,
+            italian_text='Alice guardo il coniglio bianco.',
+        )
 
     def test_good_first_review_schedules_two_days(self):
         state = ReviewState.objects.create(user=self.user, phrase=self.phrase)
@@ -39,6 +44,7 @@ class ReviewStateTests(TestCase):
 class AccountAndStudyFlowTests(TestCase):
     def setUp(self):
         self.phrase = StudyPhrase.objects.create(
+            deck_key='alice-test-flow',
             order=1,
             italian_text='Il coniglio bianco guardo l orologio.',
             study_note='coniglio = coelho',
@@ -72,7 +78,7 @@ class AccountAndStudyFlowTests(TestCase):
     def test_new_card_gate_after_twenty_new_cards_today(self):
         user = User.objects.create_user(username='lia', password='123')
         phrases = [
-            StudyPhrase(order=index + 2, italian_text=f'Frase nuova {index}.')
+            StudyPhrase(deck_key=f'alice-new-{index}', order=index + 2, italian_text=f'Frase nova {index}.')
             for index in range(NEW_CARDS_BLOCK_SIZE)
         ]
         StudyPhrase.objects.bulk_create(phrases)
@@ -87,7 +93,7 @@ class AccountAndStudyFlowTests(TestCase):
     def test_new_card_gate_can_be_bypassed_by_confirmation(self):
         user = User.objects.create_user(username='leo', password='123')
         phrases = [
-            StudyPhrase(order=index + 2, italian_text=f'Frase extra {index}.')
+            StudyPhrase(deck_key=f'alice-extra-{index}', order=index + 2, italian_text=f'Frase extra {index}.')
             for index in range(NEW_CARDS_BLOCK_SIZE + 1)
         ]
         StudyPhrase.objects.bulk_create(phrases)
@@ -111,8 +117,8 @@ class AccountAndStudyFlowTests(TestCase):
 
     def test_due_reviews_shows_only_due_cards_and_keeps_flow(self):
         user = User.objects.create_user(username='caio', password='123')
-        due_phrase = StudyPhrase.objects.create(order=2, italian_text='Carta vencida.')
-        future_phrase = StudyPhrase.objects.create(order=3, italian_text='Carta futura.')
+        due_phrase = StudyPhrase.objects.create(deck_key='alice-due', order=2, italian_text='Carta vencida.')
+        future_phrase = StudyPhrase.objects.create(deck_key='alice-future', order=3, italian_text='Carta futura.')
         due_state = ReviewState.objects.create(user=user, phrase=due_phrase, due_at=timezone.now() - timedelta(minutes=1))
         ReviewState.objects.create(user=user, phrase=future_phrase, due_at=timezone.now() + timedelta(days=1))
         self.client.force_login(user)
@@ -170,6 +176,54 @@ class ImportDeckTests(TestCase):
         self.assertEqual(review.phrase_id, phrase.id)
         self.assertEqual(review.repetitions, 5)
         self.assertEqual(phrase.italian_text, card['italian_text'])
+
+    def test_import_tech_cards_creates_separate_deck(self):
+        call_command('import_tech_phrases', limit=100, stdout=StringIO())
+
+        self.assertEqual(StudyPhrase.objects.filter(deck_key__startswith='tech-').count(), 100)
+        first = StudyPhrase.objects.get(deck_key='tech-0001')
+        self.assertIn('Entrevista de TI', first.source_title)
+        self.assertIn('Vocabulário palavra por palavra', first.study_note)
+
+
+class TechStudyFlowTests(TestCase):
+    def setUp(self):
+        self.tech_phrase = StudyPhrase.objects.create(
+            deck_key='tech-test-001',
+            source_title='Entrevista de TI em italiano',
+            chapter='Tecnologia e entrevista',
+            order=10001,
+            italian_text='Ho esperienza con API.',
+            portuguese_text='Tenho experiência com API.',
+            study_note='Vocabulário palavra por palavra:\n- API = API',
+        )
+        self.alice_phrase = StudyPhrase.objects.create(
+            deck_key='alice-test-separate',
+            order=1,
+            italian_text='Alice studia italiano.',
+        )
+
+    def test_tech_study_creates_only_tech_review_state(self):
+        user = User.objects.create_user(username='techuser', password='123')
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('tech_study'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ReviewState.objects.filter(user=user, phrase=self.tech_phrase).count(), 1)
+        self.assertFalse(ReviewState.objects.filter(user=user, phrase=self.alice_phrase).exists())
+
+    def test_tech_again_returns_card_immediately(self):
+        user = User.objects.create_user(username='techagain', password='123')
+        state = ReviewState.objects.create(user=user, phrase=self.tech_phrase, interval_days=4)
+        self.client.force_login(user)
+
+        response = self.client.post(reverse('tech_review', args=[state.id]), {'grade': ReviewState.AGAIN})
+
+        state.refresh_from_db()
+        self.assertRedirects(response, reverse('tech_study'))
+        self.assertLessEqual(state.due_at, timezone.now())
+        self.assertEqual(state.interval_days, 0)
 
 
 class VanRegistrationTests(TestCase):

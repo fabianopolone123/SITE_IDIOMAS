@@ -21,6 +21,8 @@ from .models import ReviewState, StudyPhrase, VanRegistration
 from .van_pdf import build_authorization_pdf
 
 NEW_CARDS_BLOCK_SIZE = 20
+ALICE_DECK_PREFIX = 'alice-'
+TECH_DECK_PREFIX = 'tech-'
 
 
 def home(request):
@@ -63,14 +65,15 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    now = timezone.now()
-    states = ReviewState.objects.filter(user=request.user)
-    total_phrases = StudyPhrase.objects.count()
+    alice_stats = deck_stats(request.user, ALICE_DECK_PREFIX)
+    tech_stats = deck_stats(request.user, TECH_DECK_PREFIX)
+    states = ReviewState.objects.filter(user=request.user, phrase__deck_key__startswith=ALICE_DECK_PREFIX)
+    total_phrases = alice_stats['total_phrases']
     studied_count = states.count()
-    due_count = states.filter(due_at__lte=now).count()
+    due_count = alice_stats['due_count']
     new_today = new_cards_started_today(request.user)
-    new_available = max(total_phrases - studied_count, 0)
-    next_due = states.filter(due_at__gt=now).aggregate(next=Min('due_at'))['next']
+    new_available = alice_stats['new_available']
+    next_due = alice_stats['next_due']
 
     recent_reviews = (
         states.filter(last_reviewed_at__isnull=False)
@@ -92,6 +95,8 @@ def dashboard(request):
             'next_due': next_due,
             'recent_reviews': recent_reviews,
             'grade_counts': grade_counts,
+            'alice_stats': alice_stats,
+            'tech_stats': tech_stats,
         },
     )
 
@@ -99,7 +104,7 @@ def dashboard(request):
 @login_required
 def study(request):
     allow_new_block = request.GET.get('continue_new') == '1'
-    state = next_due_state(request.user, allow_new_block=allow_new_block)
+    state = next_due_state(request.user, deck_prefix=ALICE_DECK_PREFIX, allow_new_block=allow_new_block)
     if state == 'new_limit':
         return render(
             request,
@@ -118,12 +123,12 @@ def study(request):
     if stage not in {'audio', 'text', 'answer'}:
         stage = 'audio'
 
-    return render(request, 'studies/study.html', {'state': state, 'stage': stage})
+    return render_study(request, state, stage, deck='alice')
 
 
 @login_required
 def due_reviews(request):
-    state = next_due_review_state(request.user)
+    state = next_due_review_state(request.user, ALICE_DECK_PREFIX)
     if state is None:
         return render(
             request,
@@ -140,49 +145,145 @@ def due_reviews(request):
     if stage not in {'audio', 'text', 'answer'}:
         stage = 'audio'
 
-    return render(request, 'studies/study.html', {'state': state, 'stage': stage, 'review_only': True})
+    return render_study(request, state, stage, deck='alice', review_only=True)
+
+
+@login_required
+def tech_study(request):
+    state = next_due_state(request.user, deck_prefix=TECH_DECK_PREFIX, allow_new_block=True)
+    if state is None:
+        return render(
+            request,
+            'studies/no_cards.html',
+            {
+                'title': 'Nenhum card de tecnologia disponível agora.',
+                'message': 'Quando novos cards de TI forem importados, eles aparecerão neste módulo.',
+            },
+        )
+
+    stage = request.GET.get('stage', 'audio')
+    if request.GET.get('reveal') == '1':
+        stage = 'answer'
+    if stage not in {'audio', 'text', 'answer'}:
+        stage = 'audio'
+
+    return render_study(request, state, stage, deck='tech')
+
+
+@login_required
+def tech_due_reviews(request):
+    state = next_due_review_state(request.user, TECH_DECK_PREFIX)
+    if state is None:
+        return render(
+            request,
+            'studies/no_cards.html',
+            {
+                'title': 'Revisões de tecnologia concluídas',
+                'message': 'Não há cards de entrevista em TI vencidos agora. Você pode voltar ao dashboard ou iniciar cards novos.',
+            },
+        )
+
+    stage = request.GET.get('stage', 'audio')
+    if request.GET.get('reveal') == '1':
+        stage = 'answer'
+    if stage not in {'audio', 'text', 'answer'}:
+        stage = 'audio'
+
+    return render_study(request, state, stage, deck='tech', review_only=True)
 
 
 @login_required
 @require_POST
 def review(request, state_id):
     state = get_object_or_404(ReviewState, id=state_id, user=request.user)
+    return handle_review(request, state, deck='alice')
+
+
+@login_required
+@require_POST
+def tech_review(request, state_id):
+    state = get_object_or_404(
+        ReviewState,
+        id=state_id,
+        user=request.user,
+        phrase__deck_key__startswith=TECH_DECK_PREFIX,
+    )
+    return handle_review(request, state, deck='tech')
+
+
+def handle_review(request, state, deck):
     grade = request.POST.get('grade')
     valid_grades = {choice[0] for choice in ReviewState.GRADE_CHOICES}
     if grade not in valid_grades:
         messages.error(request, 'Escolha uma nota válida para a revisão.')
-        return redirect('study')
+        return redirect('tech_study' if deck == 'tech' else 'study')
 
-    state.schedule(grade)
+    state.schedule(grade, immediate_again=(deck == 'tech'))
     state.save()
     messages.success(request, 'Revisão registrada. A próxima data foi recalculada.')
     if request.POST.get('review_only') == '1':
-        return redirect('due_reviews')
-    return redirect('study')
+        return redirect('tech_due_reviews' if deck == 'tech' else 'due_reviews')
+    return redirect('tech_study' if deck == 'tech' else 'study')
+
+
+def render_study(request, state, stage, deck, review_only=False):
+    if deck == 'tech':
+        context = {
+            'state': state,
+            'stage': stage,
+            'review_only': review_only,
+            'deck': 'tech',
+            'deck_label': 'Entrevista de TI',
+            'study_url_name': 'tech_study',
+            'due_url_name': 'tech_due_reviews',
+            'review_url_name': 'tech_review',
+            'again_label': 'volta agora',
+        }
+    else:
+        context = {
+            'state': state,
+            'stage': stage,
+            'review_only': review_only,
+            'deck': 'alice',
+            'deck_label': 'Alice',
+            'study_url_name': 'study',
+            'due_url_name': 'due_reviews',
+            'review_url_name': 'review',
+            'again_label': 'volta em 10 min',
+        }
+    return render(request, 'studies/study.html', context)
 
 
 def new_cards_started_today(user):
-    return ReviewState.objects.filter(user=user, first_seen_at__date=timezone.localdate()).count()
+    return ReviewState.objects.filter(
+        user=user,
+        first_seen_at__date=timezone.localdate(),
+        phrase__deck_key__startswith=ALICE_DECK_PREFIX,
+    ).count()
 
 
-def next_due_review_state(user):
+def next_due_review_state(user, deck_prefix):
     return (
-        ReviewState.objects.filter(user=user, due_at__lte=timezone.now())
+        ReviewState.objects.filter(user=user, due_at__lte=timezone.now(), phrase__deck_key__startswith=deck_prefix)
         .select_related('phrase')
         .order_by('due_at', 'phrase__order')
         .first()
     )
 
 
-def next_due_state(user, allow_new_block=False):
+def next_due_state(user, deck_prefix, allow_new_block=False):
     now = timezone.now()
-    due_state = next_due_review_state(user)
+    due_state = next_due_review_state(user, deck_prefix)
     if due_state:
         return due_state
 
-    studied_phrase_ids = ReviewState.objects.filter(user=user).values('phrase_id')
+    studied_phrase_ids = ReviewState.objects.filter(
+        user=user,
+        phrase__deck_key__startswith=deck_prefix,
+    ).values('phrase_id')
     next_phrase = (
         StudyPhrase.objects.exclude(id__in=studied_phrase_ids)
+        .filter(deck_key__startswith=deck_prefix)
         .filter(Q(italian_text__isnull=False) & ~Q(italian_text=''))
         .order_by('order', 'id')
         .first()
@@ -195,6 +296,21 @@ def next_due_state(user, allow_new_block=False):
         return 'new_limit'
 
     return ReviewState.objects.create(user=user, phrase=next_phrase, first_seen_at=now, due_at=now)
+
+
+def deck_stats(user, deck_prefix):
+    now = timezone.now()
+    phrases = StudyPhrase.objects.filter(deck_key__startswith=deck_prefix)
+    states = ReviewState.objects.filter(user=user, phrase__deck_key__startswith=deck_prefix)
+    total = phrases.count()
+    studied = states.count()
+    return {
+        'total_phrases': total,
+        'studied_count': studied,
+        'due_count': states.filter(due_at__lte=now).count(),
+        'new_available': max(total - studied, 0),
+        'next_due': states.filter(due_at__gt=now).aggregate(next=Min('due_at'))['next'],
+    }
 
 
 def van_home(request):

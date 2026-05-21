@@ -319,8 +319,19 @@ input:focus {
     padding-bottom: 48px;
 }
 
+.deck-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding-bottom: 18px;
+}
+
 .panel {
     padding: 24px;
+}
+
+.deck-panel .actions {
+    margin-top: 18px;
 }
 
 .big-number {
@@ -541,6 +552,7 @@ input:focus {
     .hero,
     .features,
     .metrics,
+    .deck-grid,
     .content-grid {
         grid-template-columns: 1fr;
     }
