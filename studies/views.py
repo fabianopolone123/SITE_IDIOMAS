@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import (
+    ImageAuthorizationConsultForm,
     ImageAuthorizationForm,
     ImageAuthorizationSignedTermForm,
     LoginForm,
@@ -388,12 +389,33 @@ def van_consult(request):
     return render(request, 'inscricao_van/consult.html', {'form': form, 'registration': registration})
 
 
+def term_home(request):
+    return render(request, 'termo/home.html')
+
+
 def term_register(request):
     form = ImageAuthorizationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         authorization = form.save()
         return redirect('term_signature', public_id=authorization.public_id)
     return render(request, 'termo/register.html', {'form': form})
+
+
+def term_consult(request):
+    form = ImageAuthorizationConsultForm(request.POST or None)
+    authorization = None
+    if request.method == 'POST' and form.is_valid():
+        authorization = (
+            ImageAuthorization.objects.filter(
+                responsible_cpf=form.cleaned_data['responsible_cpf'],
+                minor_cpf=form.cleaned_data['minor_cpf'],
+            )
+            .order_by('-created_at')
+            .first()
+        )
+        if authorization is None:
+            messages.error(request, 'Termo não encontrado com esses dados.')
+    return render(request, 'termo/consult.html', {'form': form, 'authorization': authorization})
 
 
 def term_signature(request, public_id):

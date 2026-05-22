@@ -213,6 +213,23 @@ class ImageAuthorizationSignedTermForm(forms.ModelForm):
         return file
 
 
+class ImageAuthorizationConsultForm(forms.Form):
+    responsible_cpf = forms.CharField(label='CPF do responsável', max_length=20)
+    minor_cpf = forms.CharField(label='CPF do adolescente', max_length=20)
+
+    def clean_responsible_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['responsible_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_minor_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['minor_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+
 class VanAdminLoginForm(forms.Form):
     password = forms.CharField(label='Senha', widget=forms.PasswordInput)
 

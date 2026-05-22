@@ -409,6 +409,24 @@ class ImageAuthorizationTests(TestCase):
         self.assertEqual(authorization.minor_cpf, '33344455506')
         self.assertEqual(authorization.responsible_phone, '16988887777')
 
+    def test_term_home_links_to_fill_and_consult(self):
+        response = self.client.get(reverse('term_home'))
+
+        self.assertContains(response, 'Preencher termo')
+        self.assertContains(response, 'Consultar termo')
+
+    def test_term_consult_finds_pending_authorization(self):
+        authorization = ImageAuthorization.objects.create(**self.authorization_payload())
+
+        response = self.client.post(
+            reverse('term_consult'),
+            {'responsible_cpf': '222.333.444-05', 'minor_cpf': '333.444.555-06'},
+        )
+
+        self.assertContains(response, authorization.minor_name)
+        self.assertContains(response, 'Falta enviar o termo assinado')
+        self.assertContains(response, 'Enviar termo agora')
+
     def test_term_download_returns_pdf(self):
         authorization = ImageAuthorization.objects.create(**self.authorization_payload())
 

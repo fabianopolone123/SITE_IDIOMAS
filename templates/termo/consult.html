@@ -1,0 +1,45 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Consultar termo{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card wide">
+        <a class="van-back" href="{% url 'term_home' %}">Voltar</a>
+        <p class="van-eyebrow">Consulta</p>
+        <h1>Consultar termo</h1>
+        <p class="van-muted">Informe o CPF do responsável e o CPF do adolescente.</p>
+
+        <form method="post" class="van-form consult">
+            {% csrf_token %}
+            {% for field in form %}
+                <label>
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <small class="van-error">{{ error }}</small>
+                    {% endfor %}
+                </label>
+            {% endfor %}
+            <button class="van-button primary" type="submit">Consultar</button>
+        </form>
+
+        {% if authorization %}
+            <div class="van-result">
+                <h2>{{ authorization.minor_name }}</h2>
+                <p>Evento: <strong>{{ authorization.event_name }}</strong></p>
+                <p>Status: <strong>{{ authorization.get_status_display }}</strong></p>
+                {% if authorization.signed_term %}
+                    <p class="van-ok">Termo assinado recebido.</p>
+                {% else %}
+                    <p class="van-warning">Falta enviar o termo assinado.</p>
+                    <div class="van-actions left">
+                        <a class="van-button secondary" href="{% url 'term_signature' authorization.public_id %}">Enviar termo agora</a>
+                        <a class="van-button ghost" href="{% url 'term_download' authorization.public_id %}">Baixar termo novamente</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
