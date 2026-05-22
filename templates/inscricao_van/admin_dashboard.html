@@ -11,6 +11,7 @@
         </div>
         <div class="van-actions">
             <a class="van-button secondary" href="{% url 'van_admin_download_all' %}">Baixar todos termos</a>
+            <a class="van-button secondary" href="{% url 'term_admin_download_all' %}">Baixar termos de imagem</a>
             <a class="van-button ghost" href="{% url 'van_admin_logout' %}">Sair</a>
         </div>
     </header>
@@ -22,6 +23,7 @@
     </section>
 
     <section class="van-table-wrap">
+        <h2 class="van-table-title">Inscrições da van</h2>
         <table class="van-table">
             <thead>
                 <tr>
@@ -57,6 +59,49 @@
         </table>
     </section>
 
+    <section class="van-metrics">
+        <article><span>{{ image_totals.total }}</span><p>Termos de imagem</p></article>
+        <article><span>{{ image_totals.signed }}</span><p>Com termo</p></article>
+        <article><span>{{ image_totals.pending }}</span><p>Pendentes</p></article>
+    </section>
+
+    <section class="van-table-wrap">
+        <h2 class="van-table-title">Autorizações de imagem e emergência</h2>
+        <table class="van-table">
+            <thead>
+                <tr>
+                    <th>Adolescente</th>
+                    <th>Responsável</th>
+                    <th>Evento</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in authorizations %}
+                    <tr>
+                        <td data-label="Adolescente">{{ item.minor_name }}</td>
+                        <td data-label="Responsável">{{ item.responsible_name }}<br><small>{{ item.responsible_cpf_formatted }}</small></td>
+                        <td data-label="Evento">{{ item.event_name }}</td>
+                        <td data-label="Status">{{ item.get_status_display }}</td>
+                        <td data-label="Ações">
+                            <button class="van-link" type="button" data-modal-open="term-modal-{{ item.id }}">Ver resumo</button>
+                            {% if item.signed_term %}
+                                <a class="van-link" href="{% url 'term_admin_download_signed' item.public_id %}">Baixar termo</a>
+                                <form class="van-inline-form" method="post" action="{% url 'term_admin_reject_signed' item.public_id %}" data-confirm="Desaprovar este termo assinado? O envio voltará para pendente.">
+                                    {% csrf_token %}
+                                    <button class="van-link danger" type="submit">Desaprovar</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Nenhum termo de imagem encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
     {% for item in registrations %}
         <dialog class="van-dialog" id="modal-{{ item.id }}">
             <h2>{{ item.minor_name }}</h2>
@@ -75,6 +120,33 @@
                 {% if item.signed_term %}
                     <a class="van-button primary" href="{% url 'van_admin_download_signed' item.public_id %}">Baixar termo assinado</a>
                     <form class="van-inline-form" method="post" action="{% url 'van_admin_reject_signed' item.public_id %}" data-confirm="Desaprovar este termo assinado? A inscricao voltara para pendente de envio.">
+                        {% csrf_token %}
+                        <button class="van-button danger" type="submit">Desaprovar termo</button>
+                    </form>
+                {% endif %}
+                <button class="van-button secondary" type="button" data-modal-close>Fechar</button>
+            </div>
+        </dialog>
+    {% endfor %}
+
+    {% for item in authorizations %}
+        <dialog class="van-dialog" id="term-modal-{{ item.id }}">
+            <h2>{{ item.minor_name }}</h2>
+            <dl>
+                <dt>Responsável</dt><dd>{{ item.responsible_name }}</dd>
+                <dt>CPF responsável</dt><dd>{{ item.responsible_cpf_formatted }}</dd>
+                <dt>CPF adolescente</dt><dd>{{ item.minor_cpf_formatted }}</dd>
+                <dt>Evento</dt><dd>{{ item.event_name }}</dd>
+                <dt>Período</dt><dd>{{ item.event_start_date|date:'d/m/Y' }} a {{ item.event_end_date|date:'d/m/Y' }}</dd>
+                <dt>Saúde</dt><dd>{{ item.health_info|linebreaksbr|default:'Não informado' }}</dd>
+                <dt>Telefones</dt><dd>{{ item.responsible_phone_formatted }}{% if item.responsible_phone_alt_formatted %}<br>{{ item.responsible_phone_alt_formatted }}{% endif %}</dd>
+                <dt>Cidade/data</dt><dd>{{ item.city }} - {{ item.signature_date|date:'d/m/Y' }}</dd>
+                <dt>Status</dt><dd>{{ item.get_status_display }}</dd>
+            </dl>
+            <div class="van-actions left">
+                {% if item.signed_term %}
+                    <a class="van-button primary" href="{% url 'term_admin_download_signed' item.public_id %}">Baixar termo assinado</a>
+                    <form class="van-inline-form" method="post" action="{% url 'term_admin_reject_signed' item.public_id %}" data-confirm="Desaprovar este termo assinado? O envio voltará para pendente.">
                         {% csrf_token %}
                         <button class="van-button danger" type="submit">Desaprovar termo</button>
                     </form>

@@ -342,6 +342,12 @@ input:focus {
     overflow-x: auto;
 }
 
+.van-table-title {
+    font-size: 1.05rem;
+    margin: 0;
+    padding: 16px 16px 0;
+}
+
 .van-table {
     border-collapse: collapse;
     min-width: 820px;

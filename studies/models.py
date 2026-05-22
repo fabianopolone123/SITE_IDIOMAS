@@ -99,6 +99,10 @@ def van_signed_term_upload_path(instance, filename):
     return f'inscricao_van/termos_assinados/{instance.public_id}.pdf'
 
 
+def image_authorization_signed_upload_path(instance, filename):
+    return f'termo_imagem/termos_assinados/{instance.public_id}.pdf'
+
+
 class VanRegistration(models.Model):
     PENDING_SIGNATURE = 'pending_signature'
     SIGNED_RECEIVED = 'signed_received'
@@ -151,6 +155,74 @@ class VanRegistration(models.Model):
     @property
     def minor_cpf_formatted(self):
         return format_cpf(self.minor_cpf or self.minor_document)
+
+    @property
+    def responsible_phone_formatted(self):
+        return format_phone(self.responsible_phone)
+
+    @property
+    def responsible_phone_alt_formatted(self):
+        return format_phone(self.responsible_phone_alt)
+
+    def save(self, *args, **kwargs):
+        self.normalize_contact_fields()
+        self.mark_signed_if_needed()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.minor_name} - {self.responsible_name}'
+
+
+class ImageAuthorization(models.Model):
+    PENDING_SIGNATURE = 'pending_signature'
+    SIGNED_RECEIVED = 'signed_received'
+    STATUS_CHOICES = [
+        (PENDING_SIGNATURE, 'Falta enviar termo assinado'),
+        (SIGNED_RECEIVED, 'Termo assinado recebido'),
+    ]
+
+    public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    responsible_name = models.CharField('nome do responsável', max_length=180)
+    responsible_cpf = models.CharField('CPF do responsável', max_length=20, db_index=True)
+    minor_name = models.CharField('nome do adolescente', max_length=180)
+    minor_cpf = models.CharField('CPF do adolescente', max_length=20, db_index=True)
+    event_name = models.CharField('evento', max_length=180)
+    event_start_date = models.DateField('data inicial do evento')
+    event_end_date = models.DateField('data final do evento')
+    health_info = models.TextField('informações importantes de saúde', blank=True, default='')
+    responsible_phone = models.CharField('telefone do responsável', max_length=30)
+    responsible_phone_alt = models.CharField('segundo telefone do responsável', max_length=30, blank=True, default='')
+    city = models.CharField('cidade', max_length=120)
+    signature_date = models.DateField('data do termo')
+    signed_term = models.FileField(
+        'termo assinado',
+        upload_to=image_authorization_signed_upload_path,
+        blank=True,
+    )
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=PENDING_SIGNATURE, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def mark_signed_if_needed(self):
+        if self.signed_term and self.status != self.SIGNED_RECEIVED:
+            self.status = self.SIGNED_RECEIVED
+
+    def normalize_contact_fields(self):
+        self.responsible_cpf = only_digits(self.responsible_cpf)
+        self.minor_cpf = only_digits(self.minor_cpf)
+        self.responsible_phone = only_digits(self.responsible_phone)
+        self.responsible_phone_alt = only_digits(self.responsible_phone_alt)
+
+    @property
+    def responsible_cpf_formatted(self):
+        return format_cpf(self.responsible_cpf)
+
+    @property
+    def minor_cpf_formatted(self):
+        return format_cpf(self.minor_cpf)
 
     @property
     def responsible_phone_formatted(self):

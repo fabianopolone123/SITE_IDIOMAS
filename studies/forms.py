@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
 from .formatters import validate_cpf_digits, validate_phone_digits
-from .models import Profile, VanRegistration
+from .models import ImageAuthorization, Profile, VanRegistration
 
 
 class RegisterForm(forms.Form):
@@ -119,6 +119,86 @@ class VanConsultForm(forms.Form):
 class VanSignedTermForm(forms.ModelForm):
     class Meta:
         model = VanRegistration
+        fields = ['signed_term']
+        labels = {'signed_term': 'Enviar termo assinado em PDF'}
+
+    def clean_signed_term(self):
+        file = self.cleaned_data.get('signed_term')
+        if not file:
+            raise forms.ValidationError('Envie o termo assinado.')
+        if not file.name.lower().endswith('.pdf'):
+            raise forms.ValidationError('Envie um arquivo PDF.')
+        if file.size > 10 * 1024 * 1024:
+            raise forms.ValidationError('O arquivo deve ter no máximo 10 MB.')
+        return file
+
+
+class ImageAuthorizationForm(forms.ModelForm):
+    class Meta:
+        model = ImageAuthorization
+        fields = [
+            'responsible_name',
+            'responsible_cpf',
+            'minor_name',
+            'minor_cpf',
+            'event_name',
+            'event_start_date',
+            'event_end_date',
+            'health_info',
+            'responsible_phone',
+            'responsible_phone_alt',
+            'city',
+            'signature_date',
+        ]
+        widgets = {
+            'event_start_date': forms.DateInput(attrs={'type': 'date'}),
+            'event_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'signature_date': forms.DateInput(attrs={'type': 'date'}),
+            'health_info': forms.Textarea(attrs={'rows': 4}),
+        }
+        labels = {
+            'responsible_name': 'Nome completo do responsável legal',
+            'responsible_cpf': 'CPF do responsável',
+            'minor_name': 'Nome completo do adolescente',
+            'minor_cpf': 'CPF do adolescente',
+            'event_name': 'Nome do evento',
+            'event_start_date': 'Data inicial do evento',
+            'event_end_date': 'Data final do evento',
+            'health_info': 'Informações importantes de saúde',
+            'responsible_phone': 'Telefone do responsável',
+            'responsible_phone_alt': 'Segundo telefone do responsável',
+            'city': 'Cidade',
+            'signature_date': 'Data do termo',
+        }
+
+    def clean_responsible_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['responsible_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_minor_cpf(self):
+        try:
+            return validate_cpf_digits(self.cleaned_data['minor_cpf'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_responsible_phone(self):
+        try:
+            return validate_phone_digits(self.cleaned_data['responsible_phone'])
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+    def clean_responsible_phone_alt(self):
+        try:
+            return validate_phone_digits(self.cleaned_data.get('responsible_phone_alt'), required=False)
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+
+
+class ImageAuthorizationSignedTermForm(forms.ModelForm):
+    class Meta:
+        model = ImageAuthorization
         fields = ['signed_term']
         labels = {'signed_term': 'Enviar termo assinado em PDF'}
 

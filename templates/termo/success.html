@@ -1,0 +1,14 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Termo enviado{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card center">
+        <p class="van-eyebrow">Tudo certo</p>
+        <h1>Termo enviado.</h1>
+        <p class="van-muted">Recebemos o termo assinado de {{ authorization.minor_name }}.</p>
+        <a class="van-button primary" href="{% url 'term_register' %}">Preencher outro termo</a>
+    </section>
+</main>
+{% endblock %}

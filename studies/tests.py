@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .tech_deck import iter_tech_cards
-from .models import Profile, ReviewState, StudyPhrase, VanRegistration
+from .models import ImageAuthorization, Profile, ReviewState, StudyPhrase, VanRegistration
 from .views import NEW_CARDS_BLOCK_SIZE
 
 
@@ -380,3 +380,62 @@ class VanRegistrationTests(TestCase):
         )
         self.assertContains(consult_response, 'Falta enviar termo assinado')
         self.assertContains(consult_response, 'Enviar termo agora')
+
+
+class ImageAuthorizationTests(TestCase):
+    def authorization_payload(self):
+        return {
+            'responsible_name': 'Responsavel Imagem',
+            'responsible_cpf': '222.333.444-05',
+            'minor_name': 'Adolescente Imagem',
+            'minor_cpf': '333.444.555-06',
+            'event_name': 'Evento Teste',
+            'event_start_date': '2026-06-10',
+            'event_end_date': '2026-06-12',
+            'health_info': 'Sem alergias informadas.',
+            'responsible_phone': '(16) 98888-7777',
+            'responsible_phone_alt': '(16) 3333-2222',
+            'city': 'São Carlos',
+            'signature_date': '2026-05-22',
+        }
+
+    def test_term_register_creates_pending_authorization(self):
+        response = self.client.post(reverse('term_register'), self.authorization_payload())
+
+        authorization = ImageAuthorization.objects.get()
+        self.assertRedirects(response, reverse('term_signature', args=[authorization.public_id]))
+        self.assertEqual(authorization.status, ImageAuthorization.PENDING_SIGNATURE)
+        self.assertEqual(authorization.responsible_cpf, '22233344405')
+        self.assertEqual(authorization.minor_cpf, '33344455506')
+        self.assertEqual(authorization.responsible_phone, '16988887777')
+
+    def test_term_download_returns_pdf(self):
+        authorization = ImageAuthorization.objects.create(**self.authorization_payload())
+
+        response = self.client.get(reverse('term_download', args=[authorization.public_id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+    def test_term_upload_signed_marks_authorization_complete(self):
+        authorization = ImageAuthorization.objects.create(**self.authorization_payload())
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+
+        response = self.client.post(
+            reverse('term_signature', args=[authorization.public_id]),
+            {'signed_term': upload},
+        )
+
+        authorization.refresh_from_db()
+        self.assertRedirects(response, reverse('term_success', args=[authorization.public_id]))
+        self.assertEqual(authorization.status, ImageAuthorization.SIGNED_RECEIVED)
+        self.assertEqual(authorization.signed_term.name, f'termo_imagem/termos_assinados/{authorization.public_id}.pdf')
+
+    def test_van_admin_dashboard_shows_separate_image_authorization_report(self):
+        ImageAuthorization.objects.create(**self.authorization_payload())
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.get(reverse('van_admin_dashboard'))
+
+        self.assertContains(response, 'Autorizações de imagem e emergência')
+        self.assertContains(response, 'Adolescente Imagem')

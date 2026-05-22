@@ -1,0 +1,40 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Termo de imagem e emergência{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card wide">
+        <p class="van-eyebrow">Autorização</p>
+        <h1>Uso de imagem e atendimento emergencial</h1>
+        <p class="van-muted">Preencha os dados para gerar o termo em PDF. Depois baixe, assine pelo gov.br e envie o arquivo assinado.</p>
+
+        <form method="post" class="van-form">
+            {% csrf_token %}
+            <div class="van-grid">
+                {% for field in form %}
+                    <label>
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <small class="van-error">{{ error }}</small>
+                        {% endfor %}
+                    </label>
+                {% endfor %}
+            </div>
+            <button class="van-button primary" type="submit" data-submit-once>Próximo</button>
+        </form>
+    </section>
+</main>
+<script>
+document.querySelectorAll('form').forEach((form) => {
+    form.addEventListener('submit', () => {
+        const button = form.querySelector('[data-submit-once]');
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Enviando...';
+        }
+    });
+});
+</script>
+{% endblock %}

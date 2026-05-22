@@ -1,0 +1,45 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Baixar e enviar termo{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card wide">
+        <a class="van-back" href="{% url 'term_register' %}">Voltar</a>
+        <p class="van-eyebrow">Passo final</p>
+        <h1>Baixe, assine e envie o termo</h1>
+        <p class="van-muted">Termo de {{ authorization.minor_name }}. O PDF precisa ser enviado assinado para concluir o envio.</p>
+
+        <div class="van-actions left">
+            <a class="van-button primary" href="{% url 'term_download' authorization.public_id %}">Baixar termo para assinatura</a>
+        </div>
+
+        <article class="van-tutorial">
+            <h2>Mini tutorial para assinar pelo gov.br</h2>
+            <ol>
+                <li>Acesse o portal oficial de assinatura eletrônica do gov.br ou o Assinador em assinador.iti.br.</li>
+                <li>Entre com CPF e senha da conta gov.br. A conta precisa ser prata ou ouro.</li>
+                <li>Clique em escolher arquivo e envie o PDF baixado aqui.</li>
+                <li>Escolha no documento o local onde a assinatura deve aparecer.</li>
+                <li>Clique em assinar digitalmente e autorize pelo aplicativo gov.br quando solicitado.</li>
+                <li>Baixe o PDF assinado. Não use imprimir para salvar, pois isso pode remover a assinatura digital.</li>
+                <li>Volte para esta tela e envie o PDF assinado.</li>
+            </ol>
+        </article>
+
+        <form method="post" enctype="multipart/form-data" class="van-form upload">
+            {% csrf_token %}
+            {% for field in form %}
+                <label>
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <small class="van-error">{{ error }}</small>
+                    {% endfor %}
+                </label>
+            {% endfor %}
+            <button class="van-button primary" type="submit">Enviar termo assinado</button>
+        </form>
+    </section>
+</main>
+{% endblock %}

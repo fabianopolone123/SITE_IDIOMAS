@@ -14,6 +14,10 @@ urlpatterns = [
     path('tecnologia/estudar/', views.tech_study, name='tech_study'),
     path('tecnologia/revisoes/', views.tech_due_reviews, name='tech_due_reviews'),
     path('tecnologia/revisao/<int:state_id>/', views.tech_review, name='tech_review'),
+    path('termo/', views.term_register, name='term_register'),
+    path('termo/<uuid:public_id>/', views.term_signature, name='term_signature'),
+    path('termo/<uuid:public_id>/baixar/', views.term_download, name='term_download'),
+    path('termo/sucesso/<uuid:public_id>/', views.term_success, name='term_success'),
     path('inscricao_van/', views.van_home, name='van_home'),
     path('inscricao_van/fazer/', views.van_register, name='van_register'),
     path('inscricao_van/consultar/', views.van_consult, name='van_consult'),
@@ -25,9 +29,20 @@ urlpatterns = [
     path('inscricao_van/admin/sair/', views.van_admin_logout, name='van_admin_logout'),
     path('inscricao_van/admin/termo/<uuid:public_id>/', views.van_admin_download_signed, name='van_admin_download_signed'),
     path(
+        'inscricao_van/admin/termo-imagem/<uuid:public_id>/',
+        views.term_admin_download_signed,
+        name='term_admin_download_signed',
+    ),
+    path(
         'inscricao_van/admin/termo/<uuid:public_id>/desaprovar/',
         views.van_admin_reject_signed,
         name='van_admin_reject_signed',
     ),
+    path(
+        'inscricao_van/admin/termo-imagem/<uuid:public_id>/desaprovar/',
+        views.term_admin_reject_signed,
+        name='term_admin_reject_signed',
+    ),
     path('inscricao_van/admin/termos.zip', views.van_admin_download_all, name='van_admin_download_all'),
+    path('inscricao_van/admin/termos-imagem.zip', views.term_admin_download_all, name='term_admin_download_all'),
 ]

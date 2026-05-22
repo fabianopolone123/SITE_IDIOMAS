@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import (
+    ImageAuthorizationForm,
+    ImageAuthorizationSignedTermForm,
     LoginForm,
     RegisterForm,
     VanAdminLoginForm,
@@ -17,7 +19,8 @@ from .forms import (
     VanRegistrationForm,
     VanSignedTermForm,
 )
-from .models import ReviewState, StudyPhrase, VanRegistration
+from .image_authorization_pdf import build_image_authorization_pdf
+from .models import ImageAuthorization, ReviewState, StudyPhrase, VanRegistration
 from .van_pdf import build_authorization_pdf
 
 NEW_CARDS_BLOCK_SIZE = 20
@@ -385,6 +388,42 @@ def van_consult(request):
     return render(request, 'inscricao_van/consult.html', {'form': form, 'registration': registration})
 
 
+def term_register(request):
+    form = ImageAuthorizationForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        authorization = form.save()
+        return redirect('term_signature', public_id=authorization.public_id)
+    return render(request, 'termo/register.html', {'form': form})
+
+
+def term_signature(request, public_id):
+    authorization = get_object_or_404(ImageAuthorization, public_id=public_id)
+    form = ImageAuthorizationSignedTermForm(request.POST or None, request.FILES or None, instance=authorization)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            form.save()
+        except OSError:
+            messages.error(
+                request,
+                'Não foi possível salvar o termo assinado agora. Tente novamente em instantes ou avise a organização.',
+            )
+        else:
+            return redirect('term_success', public_id=authorization.public_id)
+    return render(request, 'termo/signature.html', {'authorization': authorization, 'form': form})
+
+
+def term_success(request, public_id):
+    authorization = get_object_or_404(ImageAuthorization, public_id=public_id)
+    return render(request, 'termo/success.html', {'authorization': authorization})
+
+
+def term_download(request, public_id):
+    authorization = get_object_or_404(ImageAuthorization, public_id=public_id)
+    buffer = build_image_authorization_pdf(authorization)
+    filename = f'termo_imagem_{authorization.minor_name.replace(" ", "_").lower()}.pdf'
+    return FileResponse(buffer, as_attachment=True, filename=filename)
+
+
 def van_admin_login(request):
     if request.session.get('van_admin_ok'):
         return redirect('van_admin_dashboard')
@@ -408,15 +447,26 @@ def require_van_admin(request):
 def van_admin_dashboard(request):
     require_van_admin(request)
     registrations = VanRegistration.objects.all()
+    authorizations = ImageAuthorization.objects.all()
     totals = {
         'total': registrations.count(),
         'signed': registrations.filter(status=VanRegistration.SIGNED_RECEIVED).count(),
         'pending': registrations.filter(status=VanRegistration.PENDING_SIGNATURE).count(),
     }
+    image_totals = {
+        'total': authorizations.count(),
+        'signed': authorizations.filter(status=ImageAuthorization.SIGNED_RECEIVED).count(),
+        'pending': authorizations.filter(status=ImageAuthorization.PENDING_SIGNATURE).count(),
+    }
     return render(
         request,
         'inscricao_van/admin_dashboard.html',
-        {'registrations': registrations, 'totals': totals},
+        {
+            'registrations': registrations,
+            'totals': totals,
+            'authorizations': authorizations,
+            'image_totals': image_totals,
+        },
     )
 
 
@@ -444,6 +494,30 @@ def van_admin_reject_signed(request, public_id):
     return redirect('van_admin_dashboard')
 
 
+def term_admin_download_signed(request, public_id):
+    require_van_admin(request)
+    authorization = get_object_or_404(ImageAuthorization, public_id=public_id)
+    if not authorization.signed_term:
+        raise Http404()
+    filename = authorization.signed_term.name.rsplit('/', 1)[-1]
+    return FileResponse(authorization.signed_term.open('rb'), as_attachment=True, filename=filename)
+
+
+@require_POST
+def term_admin_reject_signed(request, public_id):
+    require_van_admin(request)
+    authorization = get_object_or_404(ImageAuthorization, public_id=public_id)
+    if authorization.signed_term:
+        authorization.signed_term.delete(save=False)
+    authorization.status = ImageAuthorization.PENDING_SIGNATURE
+    authorization.save(update_fields=['signed_term', 'status', 'updated_at'])
+    messages.success(
+        request,
+        'Termo de imagem desaprovado. O envio voltou para pendente.',
+    )
+    return redirect('van_admin_dashboard')
+
+
 def van_admin_download_all(request):
     require_van_admin(request)
     response = HttpResponse(content_type='application/zip')
@@ -452,5 +526,17 @@ def van_admin_download_all(request):
         for registration in VanRegistration.objects.filter(signed_term__gt=''):
             filename = f'{registration.minor_name}_{registration.public_id}.pdf'.replace(' ', '_')
             with registration.signed_term.open('rb') as uploaded:
+                archive.writestr(filename, uploaded.read())
+    return response
+
+
+def term_admin_download_all(request):
+    require_van_admin(request)
+    response = HttpResponse(content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="termos_imagem_assinados.zip"'
+    with zipfile.ZipFile(response, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for authorization in ImageAuthorization.objects.filter(signed_term__gt=''):
+            filename = f'{authorization.minor_name}_{authorization.public_id}.pdf'.replace(' ', '_')
+            with authorization.signed_term.open('rb') as uploaded:
                 archive.writestr(filename, uploaded.read())
     return response
