@@ -197,8 +197,8 @@ class TechStudyFlowTests(TestCase):
             chapter='Tecnologia e entrevista',
             order=10001,
             italian_text='Ho esperienza con API.',
-            portuguese_text='Tenho experiência com API.',
-            study_note='Vocabulário palavra por palavra:\n- API = API',
+            portuguese_text='Tenho experiÃªncia com API.',
+            study_note='VocabulÃ¡rio palavra por palavra:\n- API = API',
         )
         self.alice_phrase = StudyPhrase.objects.create(
             deck_key='alice-test-separate',
@@ -347,13 +347,16 @@ class VanRegistrationTests(TestCase):
         self.assertEqual(registration.responsible_phone, '16999999999')
         self.assertEqual(registration.responsible_phone_formatted, '(16) 99999-9999')
 
-    def test_van_admin_requires_password_then_shows_dashboard(self):
+    def test_van_admin_requires_password_then_shows_choice_and_dashboard(self):
         VanRegistration.objects.create(**self.registration_payload())
 
         login_response = self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        choice_response = self.client.get(reverse('van_admin_choice'))
         dashboard_response = self.client.get(reverse('van_admin_dashboard'))
 
-        self.assertRedirects(login_response, reverse('van_admin_dashboard'))
+        self.assertRedirects(login_response, reverse('van_admin_choice'))
+        self.assertContains(choice_response, 'Dashboard da van')
+        self.assertContains(choice_response, 'Dashboard dos termos')
         self.assertContains(dashboard_response, 'Adolescente Teste')
 
     def test_van_admin_can_reject_signed_term_and_restore_pending_upload(self):
@@ -395,7 +398,7 @@ class ImageAuthorizationTests(TestCase):
             'health_info': 'Sem alergias informadas.',
             'responsible_phone': '(16) 98888-7777',
             'responsible_phone_alt': '(16) 3333-2222',
-            'city': 'São Carlos',
+            'city': 'SÃ£o Carlos',
             'signature_date': '2026-05-22',
         }
 
@@ -449,11 +452,11 @@ class ImageAuthorizationTests(TestCase):
         self.assertEqual(authorization.status, ImageAuthorization.SIGNED_RECEIVED)
         self.assertEqual(authorization.signed_term.name, f'termo_imagem/termos_assinados/{authorization.public_id}.pdf')
 
-    def test_van_admin_dashboard_shows_separate_image_authorization_report(self):
+    def test_term_admin_dashboard_shows_image_authorization_report(self):
         ImageAuthorization.objects.create(**self.authorization_payload())
 
         self.client.post(reverse('van_admin_login'), {'password': '1580'})
-        response = self.client.get(reverse('van_admin_dashboard'))
+        response = self.client.get(reverse('term_admin_dashboard'))
 
         self.assertContains(response, 'Autorizações de imagem e emergência')
         self.assertContains(response, 'Adolescente Imagem')

@@ -1,0 +1,18 @@
+{% extends 'inscricao_van/base.html' %}
+
+{% block title %}Escolher dashboard{% endblock %}
+
+{% block content %}
+<main class="van-page">
+    <section class="van-card center">
+        <p class="van-eyebrow">Área administrativa</p>
+        <h1>Qual dashboard deseja abrir?</h1>
+        <p class="van-muted">Escolha o relatório que deseja consultar agora.</p>
+        <div class="van-actions">
+            <a class="van-button primary" href="{% url 'van_admin_dashboard' %}">Dashboard da van</a>
+            <a class="van-button secondary" href="{% url 'term_admin_dashboard' %}">Dashboard dos termos</a>
+            <a class="van-button ghost" href="{% url 'van_admin_logout' %}">Sair</a>
+        </div>
+    </section>
+</main>
+{% endblock %}

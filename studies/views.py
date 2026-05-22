@@ -448,11 +448,11 @@ def term_download(request, public_id):
 
 def van_admin_login(request):
     if request.session.get('van_admin_ok'):
-        return redirect('van_admin_dashboard')
+        return redirect('van_admin_choice')
     form = VanAdminLoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         request.session['van_admin_ok'] = True
-        return redirect('van_admin_dashboard')
+        return redirect('van_admin_choice')
     return render(request, 'inscricao_van/admin_login.html', {'form': form})
 
 
@@ -466,15 +466,29 @@ def require_van_admin(request):
         raise Http404()
 
 
+def van_admin_choice(request):
+    require_van_admin(request)
+    return render(request, 'inscricao_van/admin_choice.html')
+
+
 def van_admin_dashboard(request):
     require_van_admin(request)
     registrations = VanRegistration.objects.all()
-    authorizations = ImageAuthorization.objects.all()
     totals = {
         'total': registrations.count(),
         'signed': registrations.filter(status=VanRegistration.SIGNED_RECEIVED).count(),
         'pending': registrations.filter(status=VanRegistration.PENDING_SIGNATURE).count(),
     }
+    return render(
+        request,
+        'inscricao_van/admin_dashboard.html',
+        {'registrations': registrations, 'totals': totals},
+    )
+
+
+def term_admin_dashboard(request):
+    require_van_admin(request)
+    authorizations = ImageAuthorization.objects.all()
     image_totals = {
         'total': authorizations.count(),
         'signed': authorizations.filter(status=ImageAuthorization.SIGNED_RECEIVED).count(),
@@ -482,10 +496,8 @@ def van_admin_dashboard(request):
     }
     return render(
         request,
-        'inscricao_van/admin_dashboard.html',
+        'termo/admin_dashboard.html',
         {
-            'registrations': registrations,
-            'totals': totals,
             'authorizations': authorizations,
             'image_totals': image_totals,
         },
@@ -537,7 +549,7 @@ def term_admin_reject_signed(request, public_id):
         request,
         'Termo de imagem desaprovado. O envio voltou para pendente.',
     )
-    return redirect('van_admin_dashboard')
+    return redirect('term_admin_dashboard')
 
 
 def van_admin_download_all(request):
