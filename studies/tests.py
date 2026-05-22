@@ -11,7 +11,6 @@ from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .tech_deck import iter_tech_cards
-from .forms import VAN_EVENT_DATE
 from .models import Profile, ReviewState, StudyPhrase, VanRegistration
 from .views import NEW_CARDS_BLOCK_SIZE
 
@@ -234,18 +233,13 @@ class VanRegistrationTests(TestCase):
     def registration_payload(self):
         return {
             'responsible_name': 'Responsavel Teste',
+            'responsible_rg': '12.345.678-9',
             'responsible_cpf': '123.456.789-00',
             'responsible_phone': '(16) 99999-9999',
-            'responsible_phone_alt': '(16) 3333-4444',
+            'responsible_email': 'responsavel@example.com',
             'minor_name': 'Adolescente Teste',
             'minor_birth_date': '2010-05-10',
-            'minor_cpf': '987.654.321-00',
-            'event_name': 'Passaporte: Sua Identidade em Alta Definição',
-            'event_start_date': '2026-06-01',
-            'event_end_date': '2026-06-02',
-            'health_info': 'Alergia a amendoim.',
-            'city': 'São Carlos',
-            'signature_date': '2026-05-21',
+            'minor_document': '98.765.432-1',
         }
 
     def test_van_registration_creates_pending_record(self):
@@ -255,23 +249,21 @@ class VanRegistrationTests(TestCase):
         self.assertRedirects(response, reverse('van_signature', args=[registration.public_id]))
         self.assertEqual(registration.status, VanRegistration.PENDING_SIGNATURE)
         self.assertEqual(registration.responsible_cpf, '12345678900')
-        self.assertEqual(registration.minor_cpf, '98765432100')
+        self.assertEqual(registration.responsible_rg, '12.345.678-9')
+        self.assertEqual(registration.minor_document, '987654321')
         self.assertEqual(registration.responsible_phone, '16999999999')
-        self.assertEqual(registration.responsible_phone_alt, '1633334444')
-        self.assertEqual(registration.event_start_date, VAN_EVENT_DATE)
-        self.assertEqual(registration.event_end_date, VAN_EVENT_DATE)
 
     def test_van_registration_reuses_pending_record_for_double_submit(self):
         first_response = self.client.post(reverse('van_register'), self.registration_payload())
         payload = self.registration_payload()
-        payload['responsible_phone_alt'] = '(16) 5555-6666'
+        payload['responsible_email'] = 'novo@example.com'
         second_response = self.client.post(reverse('van_register'), payload)
 
         registration = VanRegistration.objects.get()
         self.assertRedirects(first_response, reverse('van_signature', args=[registration.public_id]))
         self.assertRedirects(second_response, reverse('van_signature', args=[registration.public_id]))
         self.assertEqual(VanRegistration.objects.count(), 1)
-        self.assertEqual(registration.responsible_phone_alt, '1655556666')
+        self.assertEqual(registration.responsible_email, 'novo@example.com')
 
     def test_van_registration_allows_new_record_after_signed_term_received(self):
         registration = VanRegistration.objects.create(**self.registration_payload())
@@ -344,9 +336,7 @@ class VanRegistrationTests(TestCase):
             **{
                 **self.registration_payload(),
                 'responsible_cpf': '123.456.789-00',
-                'minor_cpf': '987.654.321-00',
                 'responsible_phone': '(16) 99999-9999',
-                'responsible_phone_alt': '(16) 3333-4444',
             }
         )
 
@@ -354,7 +344,6 @@ class VanRegistrationTests(TestCase):
 
         registration.refresh_from_db()
         self.assertEqual(registration.responsible_cpf, '12345678900')
-        self.assertEqual(registration.minor_cpf, '98765432100')
         self.assertEqual(registration.responsible_phone, '16999999999')
         self.assertEqual(registration.responsible_phone_formatted, '(16) 99999-9999')
 

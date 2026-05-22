@@ -16,7 +16,7 @@ def build_authorization_pdf(registration):
         leftMargin=1.7 * cm,
         topMargin=1.4 * cm,
         bottomMargin=1.4 * cm,
-        title='Autorização para uso de imagem e atendimento emergencial',
+        title='Autorização para viagem de menor de idade',
     )
 
     styles = getSampleStyleSheet()
@@ -56,18 +56,15 @@ def build_authorization_pdf(registration):
     def format_date(value):
         return value.strftime('%d/%m/%Y') if value else '____/____/________'
 
-    event_date = format_date(registration.event_start_date)
-    signature_date = format_date(registration.signature_date)
-    phone_alt = registration.responsible_phone_alt_formatted or 'Não informado'
-    health_info = registration.health_info or 'Nenhuma informação adicional registrada.'
+    minor_birth_date = format_date(registration.minor_birth_date)
 
     data = [
         [Paragraph('Responsável legal', label), Paragraph(registration.responsible_name, body)],
+        [Paragraph('RG do responsável', label), Paragraph(registration.responsible_rg, body)],
         [Paragraph('CPF do responsável', label), Paragraph(registration.responsible_cpf_formatted, body)],
-        [Paragraph('Adolescente', label), Paragraph(registration.minor_name, body)],
-        [Paragraph('CPF do adolescente', label), Paragraph(registration.minor_cpf_formatted or 'Não informado', body)],
-        [Paragraph('Evento', label), Paragraph(registration.event_name, body)],
-        [Paragraph('Data do evento', label), Paragraph(event_date, body)],
+        [Paragraph('Nome do(a) menor', label), Paragraph(registration.minor_name, body)],
+        [Paragraph('Nascimento do(a) menor', label), Paragraph(minor_birth_date, body)],
+        [Paragraph('RG/CPF do(a) menor', label), Paragraph(registration.minor_document or 'Não informado', body)],
     ]
     table = Table(data, colWidths=[5.1 * cm, 10.5 * cm])
     table.setStyle(
@@ -86,51 +83,39 @@ def build_authorization_pdf(registration):
     )
 
     story = [
-        Paragraph('AUTORIZAÇÃO PARA USO DE IMAGEM E ATENDIMENTO EMERGENCIAL', title),
+        Paragraph('AUTORIZAÇÃO PARA VIAGEM DE MENOR DE IDADE', title),
         Paragraph(
-            registration.event_name,
+            'Projeto "Passaporte: Sua Identidade em Alta Definição" - CATRE de Analândia/SP',
             small,
         ),
         Spacer(1, 0.25 * cm),
         table,
         Spacer(1, 0.35 * cm),
         Paragraph(
-            f'Eu, <b>{registration.responsible_name}</b>, portador(a) do CPF nº '
-            f'<b>{registration.responsible_cpf_formatted}</b>, responsável legal por '
-            f'<b>{registration.minor_name}</b>, autorizo sua participação no evento '
-            f'<b>{registration.event_name}</b>, realizado no dia <b>{event_date}</b>.',
-            body,
-        ),
-        Paragraph('<b>Autorizo, também:</b>', body),
-        Paragraph(
-            '<b>1. Uso de imagem e voz</b><br/>'
-            'O uso gratuito de fotos, vídeos e gravações de voz realizados durante o evento, '
-            'para fins de divulgação em redes sociais, materiais institucionais, apresentações '
-            'e demais meios relacionados às atividades do evento, sem finalidade comercial.',
+            f'Eu, <b>{registration.responsible_name}</b>, portador(a) do RG nº '
+            f'<b>{registration.responsible_rg}</b> e CPF nº <b>{registration.responsible_cpf_formatted}</b>, '
+            'na qualidade de pai/mãe ou responsável legal pelo(a) adolescente indicado(a) acima, '
+            'autorizo sua participação no projeto "Passaporte: Sua Identidade em Alta Definição", '
+            'que será realizado no CATRE de Analândia/SP.',
             body,
         ),
         Paragraph(
-            '<b>2. Atendimento em situação de emergência</b><br/>'
-            'Em caso de emergência médica, autorizo os responsáveis pelo evento a providenciarem '
-            'atendimento médico, hospitalar ou remoção para unidade de saúde, caso não seja possível '
-            'contato imediato com os responsáveis legais.',
+            'Declaro estar ciente de que os adolescentes sairão da IASD Central de São Carlos '
+            'às 7h da manhã, com destino ao CATRE de Analândia, em transporte realizado por '
+            f'<b>{registration.transport_by}</b>.',
             body,
         ),
-        Spacer(1, 0.2 * cm),
-        Paragraph('<b>Informações importantes de saúde:</b>', label),
-        Paragraph(health_info.replace('\n', '<br/>'), body),
-        Spacer(1, 0.15 * cm),
-        Paragraph('<b>Telefone dos responsáveis:</b>', label),
-        Paragraph(f'{registration.responsible_phone_formatted}<br/>{phone_alt}', body),
-        Spacer(1, 0.25 * cm),
-        Paragraph(f'Cidade: <b>{registration.city or "________________"}</b>', body),
-        Paragraph(f'Data: <b>{signature_date}</b>', body),
-        Spacer(1, 0.95 * cm),
+        Paragraph(
+            'Também declaro estar ciente de que o retorno será realizado igualmente de van, '
+            'do CATRE de Analândia para a IASD Central de São Carlos, após o encerramento das '
+            'atividades programadas.',
+            body,
+        ),
+        Spacer(1, 1.1 * cm),
+        Paragraph('São Carlos/SP, ____ de ____________________ de 2026.', body),
+        Spacer(1, 1.4 * cm),
         Paragraph('_______________________________________________', body),
-        Paragraph('Assinatura do responsável legal', small),
-        Spacer(1, 0.55 * cm),
-        Paragraph('_______________________________________________', body),
-        Paragraph('Nome completo do responsável legal', small),
+        Paragraph('Assinatura do pai/mãe ou responsável legal', small),
         Spacer(1, 0.45 * cm),
         Paragraph(
             'Orientação: assine digitalmente pelo portal oficial gov.br/assinatura ou pelo '

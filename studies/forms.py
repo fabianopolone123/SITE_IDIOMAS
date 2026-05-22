@@ -1,14 +1,9 @@
-from datetime import date
-
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
-from .models import Profile
-from .models import VanRegistration
 from .formatters import validate_cpf_digits, validate_phone_digits
-
-VAN_EVENT_DATE = date(2026, 5, 30)
+from .models import Profile, VanRegistration
 
 
 class RegisterForm(forms.Form):
@@ -47,12 +42,13 @@ class LoginForm(AuthenticationForm):
 class VanRegistrationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['transport_by'].initial = 'van'
+        self.fields['transport_by'].disabled = True
+        self.fields['transport_by'].widget.attrs.update({'readonly': 'readonly'})
         for field_name in [
+            'responsible_rg',
             'minor_birth_date',
-            'minor_cpf',
             'responsible_phone',
-            'city',
-            'signature_date',
         ]:
             self.fields[field_name].required = True
 
@@ -60,45 +56,33 @@ class VanRegistrationForm(forms.ModelForm):
         model = VanRegistration
         fields = [
             'responsible_name',
+            'responsible_rg',
             'responsible_cpf',
             'responsible_phone',
-            'responsible_phone_alt',
+            'responsible_email',
             'minor_name',
             'minor_birth_date',
-            'minor_cpf',
-            'event_name',
-            'health_info',
-            'city',
-            'signature_date',
+            'minor_document',
+            'transport_by',
         ]
         widgets = {
             'minor_birth_date': forms.DateInput(attrs={'type': 'date'}),
-            'signature_date': forms.DateInput(attrs={'type': 'date'}),
-            'health_info': forms.Textarea(attrs={'rows': 4}),
         }
         labels = {
-            'responsible_name': 'Nome completo do responsável legal',
+            'responsible_name': 'Nome do pai/mãe ou responsável legal',
+            'responsible_rg': 'RG do responsável',
             'responsible_cpf': 'CPF do responsável',
-            'responsible_phone': 'Telefone do responsável',
-            'responsible_phone_alt': 'Segundo telefone do responsável',
-            'minor_name': 'Nome completo do adolescente',
-            'minor_birth_date': 'Data de nascimento do adolescente',
-            'minor_cpf': 'CPF do adolescente',
-            'event_name': 'Nome do evento',
-            'health_info': 'Informações importantes de saúde',
-            'city': 'Cidade',
-            'signature_date': 'Data do termo',
+            'responsible_phone': 'WhatsApp do responsável',
+            'responsible_email': 'Email do responsável',
+            'minor_name': 'Nome do(a) menor',
+            'minor_birth_date': 'Data de nascimento do(a) menor',
+            'minor_document': 'RG/CPF do(a) menor, se houver',
+            'transport_by': 'Transporte realizado por',
         }
 
     def clean_responsible_cpf(self):
         try:
             return validate_cpf_digits(self.cleaned_data['responsible_cpf'])
-        except ValueError as exc:
-            raise forms.ValidationError(str(exc)) from exc
-
-    def clean_minor_cpf(self):
-        try:
-            return validate_cpf_digits(self.cleaned_data['minor_cpf'])
         except ValueError as exc:
             raise forms.ValidationError(str(exc)) from exc
 
@@ -108,18 +92,10 @@ class VanRegistrationForm(forms.ModelForm):
         except ValueError as exc:
             raise forms.ValidationError(str(exc)) from exc
 
-    def clean_responsible_phone_alt(self):
-        try:
-            return validate_phone_digits(self.cleaned_data.get('responsible_phone_alt'), required=False)
-        except ValueError as exc:
-            raise forms.ValidationError(str(exc)) from exc
-
     def save(self, commit=True):
         instance = getattr(self, 'existing_registration', None) or super().save(commit=False)
         for field, value in self.cleaned_data.items():
             setattr(instance, field, value)
-        instance.event_start_date = VAN_EVENT_DATE
-        instance.event_end_date = VAN_EVENT_DATE
         instance.transport_by = 'van'
         if commit:
             instance.save()
@@ -129,7 +105,7 @@ class VanRegistrationForm(forms.ModelForm):
 class VanConsultForm(forms.Form):
     responsible_cpf = forms.CharField(label='CPF do responsável', max_length=20)
     minor_birth_date = forms.DateField(
-        label='Data de nascimento do adolescente',
+        label='Data de nascimento do menor',
         widget=forms.DateInput(attrs={'type': 'date'}),
     )
 
