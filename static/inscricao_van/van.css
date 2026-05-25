@@ -66,11 +66,17 @@ img {
     text-transform: uppercase;
 }
 
+.van-copy {
+    text-align: center;
+}
+
 .van-copy p {
     color: #dbe4ef;
     font-size: 1.15rem;
     line-height: 1.6;
     max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .van-eyebrow {
@@ -93,6 +99,7 @@ img {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+    justify-content: center;
     margin-top: 24px;
 }
 
