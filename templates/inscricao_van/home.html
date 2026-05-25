@@ -12,9 +12,13 @@
             <p>Inscri&ccedil;&atilde;o para autoriza&ccedil;&atilde;o de viagem de menor de idade em van.</p>
             <p class="van-seats {% if van_registration_full %}is-full{% endif %}">
                 {% if van_registration_full %}
-                    Vagas da van esgotadas: {{ van_registration_limit }} inscri&ccedil;&otilde;es preenchidas.
+                    <span>Vagas restantes</span>
+                    <strong>0</strong>
+                    <small>{{ van_registration_limit }} inscri&ccedil;&otilde;es preenchidas.</small>
                 {% else %}
-                    Ainda restam {{ van_remaining_slots }} de {{ van_registration_limit }} vagas na van.
+                    <span>Vagas restantes</span>
+                    <strong>{{ van_remaining_slots }}</strong>
+                    <small>de {{ van_registration_limit }} vagas na van.</small>
                 {% endif %}
             </p>
             <div class="van-actions">

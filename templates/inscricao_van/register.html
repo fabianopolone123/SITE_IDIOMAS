@@ -11,9 +11,13 @@
         <p class="van-muted">Preencha os dados para gerar o termo em PDF. Depois voc&ecirc; baixa, assina pelo gov.br e envia o arquivo assinado.</p>
         <p class="van-seats {% if van_registration_full %}is-full{% endif %}">
             {% if van_registration_full %}
-                Vagas da van esgotadas: {{ van_registration_limit }} inscri&ccedil;&otilde;es preenchidas.
+                <span>Vagas restantes</span>
+                <strong>0</strong>
+                <small>{{ van_registration_limit }} inscri&ccedil;&otilde;es preenchidas.</small>
             {% else %}
-                Ainda restam {{ van_remaining_slots }} de {{ van_registration_limit }} vagas na van.
+                <span>Vagas restantes</span>
+                <strong>{{ van_remaining_slots }}</strong>
+                <small>de {{ van_registration_limit }} vagas na van.</small>
             {% endif %}
         </p>
 

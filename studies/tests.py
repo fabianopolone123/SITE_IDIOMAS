@@ -262,7 +262,9 @@ class VanRegistrationTests(TestCase):
 
         response = self.client.get(reverse('van_home'))
 
-        self.assertContains(response, f'Ainda restam {VAN_REGISTRATION_LIMIT - 3} de {VAN_REGISTRATION_LIMIT} vagas')
+        self.assertContains(response, 'Vagas restantes')
+        self.assertContains(response, f'<strong>{VAN_REGISTRATION_LIMIT - 3}</strong>', html=True)
+        self.assertContains(response, f'de {VAN_REGISTRATION_LIMIT} vagas na van')
 
     def test_van_registration_blocks_new_record_when_limit_is_reached(self):
         for index in range(VAN_REGISTRATION_LIMIT):
@@ -275,7 +277,8 @@ class VanRegistrationTests(TestCase):
         response = self.client.post(reverse('van_register'), self.registration_payload(), follow=True)
 
         self.assertEqual(VanRegistration.objects.count(), VAN_REGISTRATION_LIMIT)
-        self.assertContains(response, 'Vagas da van esgotadas')
+        self.assertContains(response, 'Vagas restantes')
+        self.assertContains(response, '<strong>0</strong>', html=True)
         self.assertContains(response, 'As 17 vagas da van ja foram preenchidas')
 
     def test_van_registration_reuses_pending_record_even_when_limit_is_reached(self):
