@@ -25,6 +25,7 @@ from .models import ImageAuthorization, ReviewState, StudyPhrase, VanRegistratio
 from .van_pdf import build_authorization_pdf
 
 NEW_CARDS_BLOCK_SIZE = 20
+VAN_REGISTRATION_LIMIT = 17
 ALICE_DECK_PREFIX = 'alice-'
 TECH_DECK_PREFIX = 'tech-'
 
@@ -318,7 +319,7 @@ def deck_stats(user, deck_prefix):
 
 
 def van_home(request):
-    return render(request, 'inscricao_van/home.html')
+    return render(request, 'inscricao_van/home.html', van_registration_capacity_context())
 
 
 def van_register(request):
@@ -327,9 +328,31 @@ def van_register(request):
         existing_registration = find_existing_pending_registration(form)
         if existing_registration:
             form.existing_registration = existing_registration
+        elif van_registration_remaining_slots() <= 0:
+            messages.error(request, 'As 17 vagas da van ja foram preenchidas.')
+            return render(
+                request,
+                'inscricao_van/register.html',
+                {'form': form, **van_registration_capacity_context()},
+            )
         registration = form.save()
         return redirect('van_signature', public_id=registration.public_id)
-    return render(request, 'inscricao_van/register.html', {'form': form})
+    return render(request, 'inscricao_van/register.html', {'form': form, **van_registration_capacity_context()})
+
+
+def van_registration_capacity_context():
+    registrations_count = VanRegistration.objects.count()
+    remaining_slots = max(VAN_REGISTRATION_LIMIT - registrations_count, 0)
+    return {
+        'van_registration_limit': VAN_REGISTRATION_LIMIT,
+        'van_registrations_count': registrations_count,
+        'van_remaining_slots': remaining_slots,
+        'van_registration_full': remaining_slots <= 0,
+    }
+
+
+def van_registration_remaining_slots():
+    return van_registration_capacity_context()['van_remaining_slots']
 
 
 def find_existing_pending_registration(form):

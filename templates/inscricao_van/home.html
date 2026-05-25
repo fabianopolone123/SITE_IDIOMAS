@@ -1,18 +1,27 @@
 {% extends 'inscricao_van/base.html' %}
 {% load static %}
 
-{% block title %}Inscrição Van - Passaporte{% endblock %}
+{% block title %}Inscri&ccedil;&atilde;o Van - Passaporte{% endblock %}
 
 {% block content %}
 <main class="van-hero" style="--poster: url('{% static 'inscricao_van/panfleto.jpeg' %}')">
     <section class="van-hero-content">
         <div class="van-copy">
-            <p class="van-eyebrow">30/05/2026 - CATRE Analândia</p>
-            <h1>Passaporte: Sua Identidade em Alta Definição</h1>
-            <p>Inscrição para autorização de viagem de menor de idade em van.</p>
+            <p class="van-eyebrow">30/05/2026 - CATRE Anal&acirc;ndia</p>
+            <h1>Passaporte: Sua Identidade em Alta Defini&ccedil;&atilde;o</h1>
+            <p>Inscri&ccedil;&atilde;o para autoriza&ccedil;&atilde;o de viagem de menor de idade em van.</p>
+            <p class="van-seats {% if van_registration_full %}is-full{% endif %}">
+                {% if van_registration_full %}
+                    Vagas da van esgotadas: {{ van_registration_limit }} inscri&ccedil;&otilde;es preenchidas.
+                {% else %}
+                    Ainda restam {{ van_remaining_slots }} de {{ van_registration_limit }} vagas na van.
+                {% endif %}
+            </p>
             <div class="van-actions">
-                <a class="van-button primary" href="{% url 'van_register' %}">Fazer inscrição</a>
-                <a class="van-button secondary" href="{% url 'van_consult' %}">Consultar inscrição</a>
+                {% if not van_registration_full %}
+                    <a class="van-button primary" href="{% url 'van_register' %}">Fazer inscri&ccedil;&atilde;o</a>
+                {% endif %}
+                <a class="van-button secondary" href="{% url 'van_consult' %}">Consultar inscri&ccedil;&atilde;o</a>
             </div>
         </div>
         <img class="van-poster" src="{% static 'inscricao_van/panfleto.jpeg' %}" alt="Panfleto do evento Passaporte">

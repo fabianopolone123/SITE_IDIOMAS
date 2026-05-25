@@ -189,6 +189,23 @@ img {
     padding: 14px 16px;
 }
 
+.van-seats {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--van-yellow);
+    border-radius: 8px;
+    color: var(--van-ink);
+    display: inline-block;
+    font-weight: 900;
+    line-height: 1.45;
+    margin: 8px 0 0;
+    padding: 10px 14px;
+}
+
+.van-seats.is-full {
+    border-color: #fecaca;
+    color: var(--van-danger);
+}
+
 .van-back {
     color: var(--van-blue);
     display: inline-block;

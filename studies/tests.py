@@ -12,7 +12,7 @@ from unittest.mock import patch
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .tech_deck import iter_tech_cards
 from .models import ImageAuthorization, Profile, ReviewState, StudyPhrase, VanRegistration
-from .views import NEW_CARDS_BLOCK_SIZE
+from .views import NEW_CARDS_BLOCK_SIZE, VAN_REGISTRATION_LIMIT
 
 
 class ReviewStateTests(TestCase):
@@ -252,6 +252,45 @@ class VanRegistrationTests(TestCase):
         self.assertEqual(registration.responsible_rg, '12.345.678-9')
         self.assertEqual(registration.minor_document, '987654321')
         self.assertEqual(registration.responsible_phone, '16999999999')
+
+    def test_van_home_shows_remaining_slots(self):
+        for index in range(3):
+            payload = self.registration_payload()
+            payload['minor_name'] = f'Adolescente {index}'
+            payload['minor_birth_date'] = f'2010-05-{10 + index:02d}'
+            VanRegistration.objects.create(**payload)
+
+        response = self.client.get(reverse('van_home'))
+
+        self.assertContains(response, f'Ainda restam {VAN_REGISTRATION_LIMIT - 3} de {VAN_REGISTRATION_LIMIT} vagas')
+
+    def test_van_registration_blocks_new_record_when_limit_is_reached(self):
+        for index in range(VAN_REGISTRATION_LIMIT):
+            payload = self.registration_payload()
+            payload['responsible_cpf'] = f'900000000{index:02d}'
+            payload['minor_name'] = f'Adolescente {index}'
+            payload['minor_birth_date'] = f'2009-05-{index + 1:02d}'
+            VanRegistration.objects.create(**payload)
+
+        response = self.client.post(reverse('van_register'), self.registration_payload(), follow=True)
+
+        self.assertEqual(VanRegistration.objects.count(), VAN_REGISTRATION_LIMIT)
+        self.assertContains(response, 'Vagas da van esgotadas')
+        self.assertContains(response, 'As 17 vagas da van ja foram preenchidas')
+
+    def test_van_registration_reuses_pending_record_even_when_limit_is_reached(self):
+        existing = VanRegistration.objects.create(**self.registration_payload())
+        for index in range(VAN_REGISTRATION_LIMIT - 1):
+            payload = self.registration_payload()
+            payload['responsible_cpf'] = f'123456789{index:02d}'
+            payload['minor_name'] = f'Outro adolescente {index}'
+            payload['minor_birth_date'] = f'2010-06-{index + 1:02d}'
+            VanRegistration.objects.create(**payload)
+
+        response = self.client.post(reverse('van_register'), self.registration_payload())
+
+        self.assertRedirects(response, reverse('van_signature', args=[existing.public_id]))
+        self.assertEqual(VanRegistration.objects.count(), VAN_REGISTRATION_LIMIT)
 
     def test_van_registration_reuses_pending_record_for_double_submit(self):
         first_response = self.client.post(reverse('van_register'), self.registration_payload())
