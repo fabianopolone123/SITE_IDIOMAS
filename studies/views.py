@@ -501,6 +501,8 @@ def van_admin_dashboard(request):
         'total': registrations.count(),
         'signed': registrations.filter(status=VanRegistration.SIGNED_RECEIVED).count(),
         'pending': registrations.filter(status=VanRegistration.PENDING_SIGNATURE).count(),
+        'remaining_slots': van_registration_remaining_slots(),
+        'limit': VAN_REGISTRATION_LIMIT,
     }
     return render(
         request,
@@ -548,6 +550,18 @@ def van_admin_reject_signed(request, public_id):
         request,
         'Termo assinado desaprovado. A inscricao voltou para pendente de envio.',
     )
+    return redirect('van_admin_dashboard')
+
+
+@require_POST
+def van_admin_delete_registration(request, public_id):
+    require_van_admin(request)
+    registration = get_object_or_404(VanRegistration, public_id=public_id)
+    minor_name = registration.minor_name
+    if registration.signed_term:
+        registration.signed_term.delete(save=False)
+    registration.delete()
+    messages.success(request, f'Inscricao de {minor_name} excluida. A vaga foi liberada.')
     return redirect('van_admin_dashboard')
 
 

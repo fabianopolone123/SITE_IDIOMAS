@@ -43,6 +43,11 @@ urlpatterns = [
         name='van_admin_reject_signed',
     ),
     path(
+        'inscricao_van/admin/inscricao/<uuid:public_id>/excluir/',
+        views.van_admin_delete_registration,
+        name='van_admin_delete_registration',
+    ),
+    path(
         'inscricao_van/admin/termo-imagem/<uuid:public_id>/desaprovar/',
         views.term_admin_reject_signed,
         name='term_admin_reject_signed',

@@ -426,6 +426,32 @@ class VanRegistrationTests(TestCase):
         self.assertContains(consult_response, 'Falta enviar termo assinado')
         self.assertContains(consult_response, 'Enviar termo agora')
 
+    def test_van_admin_can_delete_registration_and_free_slot(self):
+        registrations = []
+        for index in range(VAN_REGISTRATION_LIMIT):
+            payload = self.registration_payload()
+            payload['responsible_cpf'] = f'800000000{index:02d}'
+            payload['minor_name'] = f'Adolescente excluir {index}'
+            payload['minor_birth_date'] = f'2008-05-{index + 1:02d}'
+            registrations.append(VanRegistration.objects.create(**payload))
+        registration = registrations[0]
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+        registration.signed_term.save('termo.pdf', upload, save=True)
+        registration.refresh_from_db()
+        signed_name = registration.signed_term.name
+        storage = registration.signed_term.storage
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.post(reverse('van_admin_delete_registration', args=[registration.public_id]), follow=True)
+
+        self.assertRedirects(response, reverse('van_admin_dashboard'))
+        self.assertEqual(VanRegistration.objects.count(), VAN_REGISTRATION_LIMIT - 1)
+        self.assertFalse(VanRegistration.objects.filter(public_id=registration.public_id).exists())
+        self.assertFalse(storage.exists(signed_name))
+        self.assertContains(response, 'A vaga foi liberada')
+        self.assertContains(response, 'Vagas restantes de 17')
+        self.assertContains(response, '<span>1</span>', html=True)
+
 
 class ImageAuthorizationTests(TestCase):
     def authorization_payload(self):
