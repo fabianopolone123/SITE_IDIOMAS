@@ -345,7 +345,7 @@ def render_study(request, state, stage, deck, review_only=False):
             'study_url_name': 'study',
             'due_url_name': 'due_reviews',
             'review_url_name': 'review',
-            'again_label': 'volta em 10 min',
+            'again_label': 'volta em 1 min',
         }
     return render(request, 'studies/study.html', context)
 

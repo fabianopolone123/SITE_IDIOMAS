@@ -33,13 +33,15 @@ class ReviewStateTests(TestCase):
         self.assertEqual(state.repetitions, 1)
         self.assertGreater(state.due_at, timezone.now())
 
-    def test_again_returns_card_to_learning_queue(self):
+    def test_again_returns_card_in_one_minute(self):
         state = ReviewState.objects.create(user=self.user, phrase=self.phrase, interval_days=5)
         state.schedule(ReviewState.AGAIN)
 
         self.assertEqual(state.interval_days, 0)
         self.assertEqual(state.lapses, 1)
-        self.assertLess((state.due_at - timezone.now()).total_seconds(), 660)
+        seconds_until_due = (state.due_at - timezone.now()).total_seconds()
+        self.assertGreater(seconds_until_due, 45)
+        self.assertLess(seconds_until_due, 75)
 
 
 class AccountAndStudyFlowTests(TestCase):

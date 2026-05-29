@@ -75,7 +75,7 @@ class ReviewState(models.Model):
             self.lapses += 1
             self.ease_factor = max(1.3, self.ease_factor - 0.2)
             self.interval_days = 0
-            self.due_at = now if immediate_again else now + timedelta(minutes=10)
+            self.due_at = now if immediate_again else now + timedelta(minutes=1)
             return
 
         if grade == self.HARD:
