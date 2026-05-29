@@ -381,6 +381,57 @@ input:focus {
     margin: 0;
 }
 
+.van-copy-panel {
+    align-items: center;
+    background: white;
+    border: 1px solid var(--van-line);
+    border-radius: 8px;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 18px;
+    padding: 16px;
+}
+
+.van-copy-panel h2 {
+    font-size: 1.05rem;
+    margin: 0 0 4px;
+}
+
+.van-copy-panel p {
+    margin: 0;
+}
+
+.van-copy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.van-copy-status {
+    color: var(--van-ok);
+    font-weight: 850;
+    grid-column: 1 / -1;
+}
+
+.van-copy-source {
+    height: 1px;
+    left: -9999px;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.van-copy-source:not([hidden]) {
+    height: 160px;
+    left: auto;
+    margin-top: 8px;
+    opacity: 1;
+    position: static;
+    width: 100%;
+}
+
 .van-metrics article {
     background: white;
     border: 1px solid var(--van-line);
@@ -522,8 +573,13 @@ input:focus {
     .van-grid,
     .van-form.consult,
     .van-metrics,
-    .van-capacity-form {
+    .van-capacity-form,
+    .van-copy-panel {
         grid-template-columns: 1fr;
+    }
+
+    .van-copy-actions {
+        justify-content: flex-start;
     }
 
     .van-hero-content {

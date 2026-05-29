@@ -506,9 +506,10 @@ def van_admin_dashboard(request):
     registrations = VanRegistration.objects.all()
     settings = van_settings()
     pending_registrations = registrations.filter(status=VanRegistration.PENDING_SIGNATURE)
+    signed_registrations = registrations.filter(status=VanRegistration.SIGNED_RECEIVED)
     totals = {
         'total': registrations.count(),
-        'signed': registrations.filter(status=VanRegistration.SIGNED_RECEIVED).count(),
+        'signed': signed_registrations.count(),
         'pending': pending_registrations.count(),
         'remaining_slots': van_registration_remaining_slots(),
         'limit': settings.capacity,
@@ -520,6 +521,7 @@ def van_admin_dashboard(request):
             'capacity_form': VanSettingsForm(instance=settings),
             'pending_registrations': pending_registrations,
             'registrations': registrations,
+            'signed_registrations': signed_registrations,
             'totals': totals,
         },
     )

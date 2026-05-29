@@ -33,6 +33,25 @@
         </form>
     </section>
 
+    <section class="van-copy-panel" aria-live="polite">
+        <div>
+            <h2>Copiar nomes dos inscritos</h2>
+            <p class="van-muted">Copia apenas o nome do menor, um por linha.</p>
+        </div>
+        <div class="van-copy-actions">
+            <button class="van-button secondary" type="button" data-copy-target="copy-all-names">Copiar todos</button>
+            <button class="van-button secondary" type="button" data-copy-target="copy-signed-names">Copiar com termo</button>
+            <button class="van-button secondary" type="button" data-copy-target="copy-pending-names">Copiar faltando termo</button>
+        </div>
+        <p class="van-copy-status" data-copy-status></p>
+        <textarea class="van-copy-source" id="copy-all-names" readonly hidden>{% for item in registrations %}{{ item.minor_name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+        <textarea class="van-copy-source" id="copy-signed-names" readonly hidden>{% for item in signed_registrations %}{{ item.minor_name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+        <textarea class="van-copy-source" id="copy-pending-names" readonly hidden>{% for item in pending_registrations %}{{ item.minor_name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+    </section>
+
     <section class="van-metrics">
         <article><span>{{ totals.total }}</span><p>Total</p></article>
         <article><span>{{ totals.signed }}</span><p>Com termo</p></article>
@@ -154,6 +173,33 @@ document.querySelectorAll('[data-confirm]').forEach((form) => {
     form.addEventListener('submit', (event) => {
         if (!window.confirm(form.dataset.confirm)) {
             event.preventDefault();
+        }
+    });
+});
+document.querySelectorAll('[data-copy-target]').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const source = document.getElementById(button.dataset.copyTarget);
+        const status = document.querySelector('[data-copy-status]');
+        const text = source.value.trim();
+        if (!text) {
+            status.textContent = 'Nenhum nome para copiar nesta lista.';
+            return;
+        }
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                source.hidden = false;
+                source.select();
+                document.execCommand('copy');
+                source.hidden = true;
+            }
+            status.textContent = 'Lista copiada.';
+        } catch (error) {
+            status.textContent = 'Nao foi possivel copiar automaticamente. Selecione a lista manualmente.';
+            source.hidden = false;
+            source.focus();
+            source.select();
         }
     });
 });

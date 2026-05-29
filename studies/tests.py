@@ -448,6 +448,28 @@ class VanRegistrationTests(TestCase):
         self.assertContains(response, pending.minor_name)
         self.assertNotContains(response, 'Adolescente Assinado</strong>')
 
+    def test_van_admin_dashboard_has_copy_name_lists(self):
+        pending = VanRegistration.objects.create(**self.registration_payload())
+        signed_payload = self.registration_payload()
+        signed_payload['responsible_cpf'] = '99988877766'
+        signed_payload['minor_name'] = 'Adolescente Assinado'
+        signed_payload['minor_birth_date'] = '2010-06-10'
+        signed = VanRegistration.objects.create(**signed_payload)
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+        signed.signed_term.save('termo.pdf', upload, save=True)
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.get(reverse('van_admin_dashboard'))
+        html = response.content.decode()
+
+        self.assertContains(response, 'Copiar todos')
+        self.assertContains(response, 'Copiar com termo')
+        self.assertContains(response, 'Copiar faltando termo')
+        self.assertIn(f'id="copy-all-names" readonly hidden>{pending.minor_name}', html)
+        self.assertIn('Adolescente Assinado', html)
+        self.assertIn('id="copy-signed-names" readonly hidden>Adolescente Assinado', html)
+        self.assertIn(f'id="copy-pending-names" readonly hidden>{pending.minor_name}', html)
+
     def test_van_admin_can_reject_signed_term_and_restore_pending_upload(self):
         registration = VanRegistration.objects.create(**self.registration_payload())
         upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
