@@ -200,7 +200,7 @@ class ImportDeckTests(TestCase):
         self.assertIn('Frases curtas', first.source_title)
         self.assertIn('Vocabulário', first.study_note)
         self.assertIn('Treino', first.study_note)
-        self.assertIn('Ci vediamo', last.italian_text)
+        self.assertIn('Questa frase', last.italian_text)
 
 
 class TechStudyFlowTests(TestCase):
