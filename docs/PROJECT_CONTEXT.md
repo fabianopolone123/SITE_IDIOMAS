@@ -113,7 +113,7 @@ Implementado em `ReviewState.schedule`.
 
 Notas:
 
-- `Errei` (`again`): volta em 1 minuto, zera intervalo para 0, reduz facilidade.
+- `Errei` (`again`): volta em 2 minutos, zera intervalo para 0, reduz facilidade.
 - `Dificil` (`hard`): primeira vez volta em 1 dia; depois cresce pouco.
 - `Bom` (`good`): primeira vez volta em 2 dias; depois multiplica pelo `ease_factor`.
 - `Facil` (`easy`): primeira vez volta em 4 dias; depois cresce mais rapido.
