@@ -75,6 +75,8 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate --noinput
 python manage.py import_alice_phrases
+python manage.py import_tech_phrases
+python manage.py import_random_short_phrases
 python manage.py collectstatic --noinput
 python manage.py check
 systemctl restart '$Service'

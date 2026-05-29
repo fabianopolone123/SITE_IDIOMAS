@@ -29,6 +29,7 @@ NEW_CARDS_BLOCK_SIZE = 20
 VAN_REGISTRATION_LIMIT = 17
 ALICE_DECK_PREFIX = 'alice-'
 TECH_DECK_PREFIX = 'tech-'
+RANDOM_SHORT_DECK_PREFIX = 'random-'
 
 
 def home(request):
@@ -73,6 +74,7 @@ def logout_view(request):
 def dashboard(request):
     alice_stats = deck_stats(request.user, ALICE_DECK_PREFIX)
     tech_stats = deck_stats(request.user, TECH_DECK_PREFIX)
+    random_short_stats = deck_stats(request.user, RANDOM_SHORT_DECK_PREFIX)
     states = ReviewState.objects.filter(user=request.user, phrase__deck_key__startswith=ALICE_DECK_PREFIX)
     total_phrases = alice_stats['total_phrases']
     studied_count = states.count()
@@ -103,6 +105,7 @@ def dashboard(request):
             'grade_counts': grade_counts,
             'alice_stats': alice_stats,
             'tech_stats': tech_stats,
+            'random_short_stats': random_short_stats,
         },
     )
 
@@ -199,6 +202,55 @@ def tech_due_reviews(request):
 
 
 @login_required
+def random_short_study(request):
+    state = next_due_state(
+        request.user,
+        deck_prefix=RANDOM_SHORT_DECK_PREFIX,
+        allow_new_block=True,
+        random_new=True,
+    )
+    if state is None:
+        return render(
+            request,
+            'studies/no_cards.html',
+            {
+                'title': 'Nenhuma frase curta disponível agora.',
+                'message': 'Quando novas frases curtas forem importadas, elas aparecerão neste módulo.',
+            },
+        )
+
+    stage = request.GET.get('stage', 'audio')
+    if request.GET.get('reveal') == '1':
+        stage = 'answer'
+    if stage not in {'audio', 'text', 'answer'}:
+        stage = 'audio'
+
+    return render_study(request, state, stage, deck='random')
+
+
+@login_required
+def random_short_due_reviews(request):
+    state = next_due_review_state(request.user, RANDOM_SHORT_DECK_PREFIX)
+    if state is None:
+        return render(
+            request,
+            'studies/no_cards.html',
+            {
+                'title': 'Revisões de frases curtas concluídas',
+                'message': 'Não há frases curtas vencidas agora. Você pode voltar ao dashboard ou sortear uma frase nova.',
+            },
+        )
+
+    stage = request.GET.get('stage', 'audio')
+    if request.GET.get('reveal') == '1':
+        stage = 'answer'
+    if stage not in {'audio', 'text', 'answer'}:
+        stage = 'audio'
+
+    return render_study(request, state, stage, deck='random', review_only=True)
+
+
+@login_required
 @require_POST
 def review(request, state_id):
     state = get_object_or_404(ReviewState, id=state_id, user=request.user)
@@ -217,19 +269,45 @@ def tech_review(request, state_id):
     return handle_review(request, state, deck='tech')
 
 
+@login_required
+@require_POST
+def random_short_review(request, state_id):
+    state = get_object_or_404(
+        ReviewState,
+        id=state_id,
+        user=request.user,
+        phrase__deck_key__startswith=RANDOM_SHORT_DECK_PREFIX,
+    )
+    return handle_review(request, state, deck='random')
+
+
 def handle_review(request, state, deck):
     grade = request.POST.get('grade')
     valid_grades = {choice[0] for choice in ReviewState.GRADE_CHOICES}
     if grade not in valid_grades:
         messages.error(request, 'Escolha uma nota válida para a revisão.')
-        return redirect('tech_study' if deck == 'tech' else 'study')
+        return redirect(study_route_for_deck(deck))
 
-    state.schedule(grade, immediate_again=(deck == 'tech'))
+    state.schedule(grade, immediate_again=(deck in {'tech', 'random'}))
     state.save()
     messages.success(request, 'Revisão registrada. A próxima data foi recalculada.')
     if request.POST.get('review_only') == '1':
-        return redirect('tech_due_reviews' if deck == 'tech' else 'due_reviews')
-    return redirect('tech_study' if deck == 'tech' else 'study')
+        return redirect(due_route_for_deck(deck))
+    return redirect(study_route_for_deck(deck))
+
+
+def study_route_for_deck(deck):
+    return {
+        'tech': 'tech_study',
+        'random': 'random_short_study',
+    }.get(deck, 'study')
+
+
+def due_route_for_deck(deck):
+    return {
+        'tech': 'tech_due_reviews',
+        'random': 'random_short_due_reviews',
+    }.get(deck, 'due_reviews')
 
 
 def render_study(request, state, stage, deck, review_only=False):
@@ -243,6 +321,18 @@ def render_study(request, state, stage, deck, review_only=False):
             'study_url_name': 'tech_study',
             'due_url_name': 'tech_due_reviews',
             'review_url_name': 'tech_review',
+            'again_label': 'volta agora',
+        }
+    elif deck == 'random':
+        context = {
+            'state': state,
+            'stage': stage,
+            'review_only': review_only,
+            'deck': 'random',
+            'deck_label': 'Frases curtas',
+            'study_url_name': 'random_short_study',
+            'due_url_name': 'random_short_due_reviews',
+            'review_url_name': 'random_short_review',
             'again_label': 'volta agora',
         }
     else:
@@ -277,7 +367,7 @@ def next_due_review_state(user, deck_prefix):
     )
 
 
-def next_due_state(user, deck_prefix, allow_new_block=False):
+def next_due_state(user, deck_prefix, allow_new_block=False, random_new=False):
     now = timezone.now()
     due_state = next_due_review_state(user, deck_prefix)
     if due_state:
@@ -291,9 +381,11 @@ def next_due_state(user, deck_prefix, allow_new_block=False):
         StudyPhrase.objects.exclude(id__in=studied_phrase_ids)
         .filter(deck_key__startswith=deck_prefix)
         .filter(Q(italian_text__isnull=False) & ~Q(italian_text=''))
-        .order_by('order', 'id')
-        .first()
     )
+    if random_new:
+        next_phrase = next_phrase.order_by('?').first()
+    else:
+        next_phrase = next_phrase.order_by('order', 'id').first()
     if next_phrase is None:
         return None
 

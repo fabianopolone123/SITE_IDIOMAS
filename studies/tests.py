@@ -10,6 +10,7 @@ from django.utils import timezone
 from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
+from .random_short_deck import iter_random_short_cards
 from .tech_deck import iter_tech_cards
 from .models import ImageAuthorization, Profile, ReviewState, StudyPhrase, VanRegistration, VanSettings
 from .views import NEW_CARDS_BLOCK_SIZE, VAN_REGISTRATION_LIMIT
@@ -188,6 +189,17 @@ class ImportDeckTests(TestCase):
         self.assertLessEqual(len(first.italian_text), 30)
         self.assertIn('apprendimento continuo', last.italian_text)
 
+    def test_import_random_short_cards_creates_separate_deck_with_detailed_notes(self):
+        call_command('import_random_short_phrases', limit=50, stdout=StringIO())
+
+        self.assertEqual(StudyPhrase.objects.filter(deck_key__startswith='random-').count(), 50)
+        first = StudyPhrase.objects.get(deck_key='random-0001')
+        last = StudyPhrase.objects.get(deck_key='random-0050')
+        self.assertIn('Frases curtas', first.source_title)
+        self.assertIn('Vocabulário', first.study_note)
+        self.assertIn('Treino', first.study_note)
+        self.assertIn('Ci vediamo', last.italian_text)
+
 
 class TechStudyFlowTests(TestCase):
     def setUp(self):
@@ -225,6 +237,46 @@ class TechStudyFlowTests(TestCase):
 
         state.refresh_from_db()
         self.assertRedirects(response, reverse('tech_study'))
+        self.assertLessEqual(state.due_at, timezone.now())
+        self.assertEqual(state.interval_days, 0)
+
+
+class RandomShortStudyFlowTests(TestCase):
+    def setUp(self):
+        self.random_phrase = StudyPhrase.objects.create(
+            deck_key='random-test-001',
+            source_title='Frases curtas aleatorias em italiano',
+            chapter='Frases curtas aleatorias',
+            order=20001,
+            italian_text='Grazie mille.',
+            portuguese_text='Muito obrigado.',
+            study_note='Vocabulário: grazie = obrigado.\nTreino: use como agradecimento forte.',
+        )
+        self.alice_phrase = StudyPhrase.objects.create(
+            deck_key='alice-random-separate',
+            order=1,
+            italian_text='Alice studia italiano.',
+        )
+
+    def test_random_short_study_creates_only_random_review_state(self):
+        user = User.objects.create_user(username='randomuser', password='123')
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('random_short_study'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ReviewState.objects.filter(user=user, phrase=self.random_phrase).count(), 1)
+        self.assertFalse(ReviewState.objects.filter(user=user, phrase=self.alice_phrase).exists())
+
+    def test_random_short_again_returns_card_immediately(self):
+        user = User.objects.create_user(username='randomagain', password='123')
+        state = ReviewState.objects.create(user=user, phrase=self.random_phrase, interval_days=4)
+        self.client.force_login(user)
+
+        response = self.client.post(reverse('random_short_review', args=[state.id]), {'grade': ReviewState.AGAIN})
+
+        state.refresh_from_db()
+        self.assertRedirects(response, reverse('random_short_study'))
         self.assertLessEqual(state.due_at, timezone.now())
         self.assertEqual(state.interval_days, 0)
 

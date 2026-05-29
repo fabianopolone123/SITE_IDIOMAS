@@ -56,6 +56,18 @@
             <a class="button primary" href="{% url 'tech_study' %}">Estudar TI</a>
         </div>
     </article>
+
+    <article class="panel deck-panel">
+        <p class="eyebrow">Frases aleatorias</p>
+        <h2>Frases curtas do dia a dia</h2>
+        <p class="muted">{{ random_short_stats.studied_count }} estudadas de {{ random_short_stats.total_phrases }}. {{ random_short_stats.due_count }} revisão{% if random_short_stats.due_count != 1 %}ões{% endif %} vencida{% if random_short_stats.due_count != 1 %}s{% endif %}. Cards curtos com explicações detalhadas para fixar uso real.</p>
+        <div class="actions">
+            {% if random_short_stats.due_count %}
+                <a class="button secondary" href="{% url 'random_short_due_reviews' %}">Revisar frases</a>
+            {% endif %}
+            <a class="button primary" href="{% url 'random_short_study' %}">Estudar frases curtas</a>
+        </div>
+    </article>
 </section>
 
 <section class="content-grid">

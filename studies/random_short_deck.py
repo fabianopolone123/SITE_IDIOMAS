@@ -1,0 +1,70 @@
+RANDOM_SHORT_SOURCE_TITLE = 'Frases curtas aleatorias em italiano'
+RANDOM_SHORT_CHAPTER = 'Frases curtas aleatorias'
+
+
+RANDOM_SHORT_CARDS = [
+    ("Buongiorno!", "Bom dia!", "Vocabulário: buongiorno = bom dia.\nUso real: cumprimento padrão de manhã e início da tarde.\nTreino: responda em voz alta como se estivesse entrando em uma loja."),
+    ("Buonasera!", "Boa noite!", "Vocabulário: buonasera = boa noite/boa tarde de fim de dia.\nUso real: cumprimento ao chegar, não despedida.\nTreino: compare com buona notte, usado antes de dormir."),
+    ("A domani.", "Até amanhã.", "Vocabulário: domani = amanhã.\nEstrutura: a + tempo pode indicar até aquele momento.\nTreino: diga a frase imaginando que você está se despedindo de uma aula."),
+    ("A dopo.", "Até depois.", "Vocabulário: dopo = depois.\nUso real: despedida curta quando você verá a pessoa mais tarde.\nTreino: repita junto com A presto, percebendo a diferença de tempo."),
+    ("A presto.", "Até breve.", "Vocabulário: presto = cedo/logo.\nUso real: despedida sem horário definido, mas com ideia de reencontro.\nTreino: use quando não sabe exatamente quando verá a pessoa."),
+    ("Come stai?", "Como você está?", "Vocabulário: come = como; stai = você está.\nGramática: stai vem de stare, usado para estado momentâneo.\nTreino: responda com Sto bene ou Non sto molto bene."),
+    ("Sto bene.", "Estou bem.", "Vocabulário: sto = estou; bene = bem.\nGramática: stare descreve estado atual.\nTreino: acrescente grazie no fim: Sto bene, grazie."),
+    ("Non sto bene.", "Não estou bem.", "Vocabulário: non = não; bene = bem.\nGramática: non vem antes do verbo.\nTreino: fale devagar e perceba que non sto soa como uma unidade."),
+    ("Tutto bene.", "Tudo bem.", "Vocabulário: tutto = tudo; bene = bem.\nUso real: resposta curta e natural para Come va?\nTreino: use com entonação de resposta rápida."),
+    ("Come va?", "Como vai?", "Vocabulário: va = vai.\nUso real: pergunta informal sobre como as coisas estão.\nTreino: responda Tutto bene, grazie."),
+    ("Mi chiamo Ana.", "Eu me chamo Ana.", "Vocabulário: mi chiamo = eu me chamo.\nGramática: chiamarsi é reflexivo; mi acompanha a primeira pessoa.\nTreino: troque Ana pelo seu nome."),
+    ("Sono brasiliano.", "Sou brasileiro.", "Vocabulário: sono = sou; brasiliano = brasileiro.\nGramática: masculino singular; para feminino, brasiliana.\nTreino: diga as duas versões: brasiliano/brasiliana."),
+    ("Sono brasiliana.", "Sou brasileira.", "Vocabulário: brasiliana = brasileira.\nGramática: o adjetivo concorda com quem fala.\nTreino: compare com italiano/italiana para fixar a terminação."),
+    ("Parlo portoghese.", "Eu falo português.", "Vocabulário: parlo = eu falo; portoghese = português.\nGramática: primeira pessoa do presente termina em -o.\nTreino: troque por Parlo italiano."),
+    ("Parlo un po' italiano.", "Eu falo um pouco de italiano.", "Vocabulário: un po' = um pouco.\nUso real: frase útil para avisar seu nível sem travar a conversa.\nTreino: mantenha o apóstrofo mental em po'."),
+    ("Non capisco.", "Não entendo.", "Vocabulário: capisco = entendo.\nGramática: capire vira capisco na primeira pessoa.\nTreino: use quando precisar pedir repetição."),
+    ("Capisco un po'.", "Entendo um pouco.", "Vocabulário: un po' = um pouco.\nGramática: objeto implícito: entendo um pouco disso.\nTreino: responda após ouvir uma explicação curta."),
+    ("Puoi ripetere?", "Você pode repetir?", "Vocabulário: puoi = você pode; ripetere = repetir.\nUso real: pedido educado e direto.\nTreino: fale com entonação de pergunta."),
+    ("Parla più piano.", "Fale mais devagar.", "Vocabulário: più = mais; piano = devagar/baixo.\nUso real: pedido comum quando o nativo fala rápido.\nTreino: repita destacando più piano."),
+    ("Per favore.", "Por favor.", "Vocabulário: favore = favor.\nUso real: expressão fixa de cortesia.\nTreino: coloque depois de pedidos: Un caffè, per favore."),
+    ("Grazie mille.", "Muito obrigado.", "Vocabulário: mille = mil.\nUso real: agradecimento mais forte que grazie.\nTreino: imagine agradecendo alguém que ajudou bastante."),
+    ("Prego.", "De nada.", "Vocabulário: prego = de nada/pois não.\nUso real: resposta a grazie e também convite para a pessoa falar/entrar.\nTreino: use como resposta automática a Grazie."),
+    ("Scusa.", "Desculpa.", "Vocabulário: scusa = desculpa.\nUso real: informal; com desconhecidos pode usar scusi.\nTreino: diga como pedido rápido de desculpa."),
+    ("Mi dispiace.", "Sinto muito.", "Vocabulário: dispiace = desagrada/lamento.\nUso real: pedido de desculpa mais sentido que scusa.\nTreino: use para situações mais sérias."),
+    ("Non importa.", "Não importa.", "Vocabulário: importa = importa.\nUso real: resposta para tranquilizar alguém.\nTreino: diga depois de Mi dispiace, como se perdoasse a pessoa."),
+    ("Va bene.", "Está bem.", "Vocabulário: va = vai; bene = bem.\nUso real: concordância: ok, combinado.\nTreino: use como confirmação curta."),
+    ("Sono d'accordo.", "Estou de acordo.", "Vocabulário: accordo = acordo.\nGramática: d'accordo usa apóstrofo porque vem de di accordo.\nTreino: use para concordar em uma conversa."),
+    ("Non sono d'accordo.", "Não concordo.", "Vocabulário: non sono = não sou/estou.\nUso real: discordância clara, mas educada.\nTreino: acrescente però para suavizar: Non sono d'accordo, però..."),
+    ("Ho fame.", "Estou com fome.", "Vocabulário: fame = fome.\nGramática: em italiano se diz ter fome, não estar com fome.\nTreino: compare Ho fame com Ho sete."),
+    ("Ho sete.", "Estou com sede.", "Vocabulário: sete = sede.\nGramática: ho = tenho.\nTreino: repita junto com Ho fame para fixar a estrutura."),
+    ("Ho freddo.", "Estou com frio.", "Vocabulário: freddo = frio.\nGramática: italiano usa avere: ho freddo.\nTreino: não traduza palavra por palavra como sono freddo."),
+    ("Ho caldo.", "Estou com calor.", "Vocabulário: caldo = calor/quente.\nGramática: sensação física usa avere.\nTreino: contraste Ho caldo com Fa caldo, que fala do clima."),
+    ("Sono stanco.", "Estou cansado.", "Vocabulário: stanco = cansado.\nGramática: adjetivo concorda; feminino: stanca.\nTreino: diga Sono stanco hoje, Sono stanca se você for mulher."),
+    ("Sono pronta.", "Estou pronta.", "Vocabulário: pronta = pronta.\nGramática: feminino singular; masculino seria pronto.\nTreino: responda quando alguém perguntar se você está preparado."),
+    ("È facile.", "É fácil.", "Vocabulário: facile = fácil.\nGramática: è tem acento e significa é.\nTreino: use para avaliar uma tarefa simples."),
+    ("È difficile.", "É difícil.", "Vocabulário: difficile = difícil.\nGramática: mesmo adjetivo para masculino e feminino singular.\nTreino: compare È facile e È difficile."),
+    ("È importante.", "É importante.", "Vocabulário: importante = importante.\nUso real: frase pronta para destacar prioridade.\nTreino: acrescente per me: È importante per me."),
+    ("Non è urgente.", "Não é urgente.", "Vocabulário: urgente = urgente.\nGramática: non vem antes de è.\nTreino: use para acalmar uma situação."),
+    ("Aspetta un momento.", "Espere um momento.", "Vocabulário: aspetta = espere; momento = momento.\nUso real: pedido informal para aguardar.\nTreino: fale como se precisasse de alguns segundos."),
+    ("Arrivo subito.", "Chego já.", "Vocabulário: arrivo = eu chego; subito = imediatamente.\nUso real: resposta quando alguém está esperando você.\nTreino: imagine respondendo pelo WhatsApp."),
+    ("Sono qui.", "Estou aqui.", "Vocabulário: qui = aqui.\nGramática: sono pode ser sou/estou conforme contexto.\nTreino: use ao avisar que chegou."),
+    ("Sono a casa.", "Estou em casa.", "Vocabulário: casa = casa.\nGramática: a casa é expressão fixa para em casa.\nTreino: compare com Sono qui."),
+    ("Vado a casa.", "Vou para casa.", "Vocabulário: vado = eu vou.\nGramática: andare a + lugar; a casa é destino.\nTreino: contraste Sono a casa com Vado a casa."),
+    ("Torno presto.", "Volto logo.", "Vocabulário: torno = volto; presto = logo.\nUso real: aviso curto de retorno.\nTreino: use antes de sair rapidamente."),
+    ("Oggi lavoro.", "Hoje eu trabalho.", "Vocabulário: oggi = hoje; lavoro = trabalho.\nGramática: lavoro pode ser verbo ou substantivo; aqui é verbo.\nTreino: compare com Il lavoro, o trabalho."),
+    ("Domani studio.", "Amanhã eu estudo.", "Vocabulário: domani = amanhã; studio = estudo.\nGramática: presente pode falar de futuro próximo.\nTreino: diga seu plano para amanhã."),
+    ("Mi piace molto.", "Eu gosto muito.", "Vocabulário: mi piace = eu gosto; molto = muito.\nGramática: literalmente algo agrada a mim.\nTreino: complete mentalmente: Mi piace molto l'italiano."),
+    ("Non mi piace.", "Eu não gosto.", "Vocabulário: non mi piace = eu não gosto.\nGramática: non nega a expressão inteira.\nTreino: use para recusar algo com educação."),
+    ("Che bello!", "Que bonito!", "Vocabulário: bello = bonito/legal.\nUso real: exclamação comum para algo agradável.\nTreino: use vendo uma foto, uma ideia ou uma notícia boa."),
+    ("Ci vediamo.", "A gente se vê.", "Vocabulário: vediamo = vemos; ci = nos/a gente.\nUso real: despedida natural, parecida com até mais.\nTreino: finalize uma conversa dizendo Ci vediamo."),
+]
+
+
+def iter_random_short_cards(limit=None):
+    cards = RANDOM_SHORT_CARDS if limit is None else RANDOM_SHORT_CARDS[:limit]
+    for index, (text, translation, note) in enumerate(cards, start=1):
+        yield {
+            'deck_key': f'random-{index:04d}',
+            'order': 20000 + index,
+            'italian_text': text,
+            'portuguese_text': translation,
+            'study_note': note,
+            'source_title': RANDOM_SHORT_SOURCE_TITLE,
+            'chapter': RANDOM_SHORT_CHAPTER,
+        }

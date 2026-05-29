@@ -22,6 +22,8 @@ python manage.py migrate --noinput
 
 echo "==> Importando cards sem apagar progresso"
 python manage.py import_alice_phrases
+python manage.py import_tech_phrases
+python manage.py import_random_short_phrases
 
 echo "==> Coletando arquivos estaticos"
 python manage.py collectstatic --noinput
