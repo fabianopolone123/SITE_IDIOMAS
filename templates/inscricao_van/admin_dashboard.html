@@ -10,11 +10,28 @@
             <h1>Dashboard da van</h1>
         </div>
         <div class="van-actions">
+            <button class="van-button secondary" type="button" data-modal-open="pending-docs-modal">Faltam enviar termo</button>
             <a class="van-button secondary" href="{% url 'van_admin_download_all' %}">Baixar todos termos</a>
             <a class="van-button ghost" href="{% url 'van_admin_choice' %}">Trocar dashboard</a>
             <a class="van-button ghost" href="{% url 'van_admin_logout' %}">Sair</a>
         </div>
     </header>
+
+    <section class="van-admin-settings">
+        <form method="post" action="{% url 'van_admin_update_capacity' %}" class="van-capacity-form">
+            {% csrf_token %}
+            {% for field in capacity_form %}
+                <label>
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <small class="van-error">{{ error }}</small>
+                    {% endfor %}
+                </label>
+            {% endfor %}
+            <button class="van-button primary" type="submit">Salvar vagas</button>
+        </form>
+    </section>
 
     <section class="van-metrics">
         <article><span>{{ totals.total }}</span><p>Total</p></article>
@@ -64,6 +81,26 @@
         </table>
     </section>
 
+    <dialog class="van-dialog" id="pending-docs-modal">
+        <h2>Faltam enviar termo assinado</h2>
+        {% if pending_registrations %}
+            <ul class="van-pending-list">
+                {% for item in pending_registrations %}
+                    <li>
+                        <strong>{{ item.minor_name }}</strong>
+                        <span>{{ item.responsible_name }} - {{ item.responsible_phone_formatted|default:'telefone nao informado' }}</span>
+                        <button class="van-link" type="button" data-modal-switch="modal-{{ item.id }}">Ver resumo</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="van-muted">Nenhuma inscricao pendente de termo assinado.</p>
+        {% endif %}
+        <div class="van-actions left">
+            <button class="van-button secondary" type="button" data-modal-close>Fechar</button>
+        </div>
+    </dialog>
+
     {% for item in registrations %}
         <dialog class="van-dialog" id="modal-{{ item.id }}">
             <h2>{{ item.minor_name }}</h2>
@@ -105,6 +142,12 @@ document.querySelectorAll('[data-modal-open]').forEach((button) => {
 document.querySelectorAll('[data-modal-close]').forEach((button) => {
     button.addEventListener('click', () => {
         button.closest('dialog').close();
+    });
+});
+document.querySelectorAll('[data-modal-switch]').forEach((button) => {
+    button.addEventListener('click', () => {
+        button.closest('dialog').close();
+        document.getElementById(button.dataset.modalSwitch).showModal();
     });
 });
 document.querySelectorAll('[data-confirm]').forEach((form) => {

@@ -18,10 +18,11 @@ from .forms import (
     VanAdminLoginForm,
     VanConsultForm,
     VanRegistrationForm,
+    VanSettingsForm,
     VanSignedTermForm,
 )
 from .image_authorization_pdf import build_image_authorization_pdf
-from .models import ImageAuthorization, ReviewState, StudyPhrase, VanRegistration
+from .models import ImageAuthorization, ReviewState, StudyPhrase, VanRegistration, VanSettings
 from .van_pdf import build_authorization_pdf
 
 NEW_CARDS_BLOCK_SIZE = 20
@@ -329,7 +330,8 @@ def van_register(request):
         if existing_registration:
             form.existing_registration = existing_registration
         elif van_registration_remaining_slots() <= 0:
-            messages.error(request, 'As 17 vagas da van ja foram preenchidas.')
+            capacity = van_settings().capacity
+            messages.error(request, f'As {capacity} vagas da van ja foram preenchidas.')
             return render(
                 request,
                 'inscricao_van/register.html',
@@ -341,14 +343,19 @@ def van_register(request):
 
 
 def van_registration_capacity_context():
+    capacity = van_settings().capacity
     registrations_count = VanRegistration.objects.count()
-    remaining_slots = max(VAN_REGISTRATION_LIMIT - registrations_count, 0)
+    remaining_slots = max(capacity - registrations_count, 0)
     return {
-        'van_registration_limit': VAN_REGISTRATION_LIMIT,
+        'van_registration_limit': capacity,
         'van_registrations_count': registrations_count,
         'van_remaining_slots': remaining_slots,
         'van_registration_full': remaining_slots <= 0,
     }
+
+
+def van_settings():
+    return VanSettings.load()
 
 
 def van_registration_remaining_slots():
@@ -497,18 +504,38 @@ def van_admin_choice(request):
 def van_admin_dashboard(request):
     require_van_admin(request)
     registrations = VanRegistration.objects.all()
+    settings = van_settings()
+    pending_registrations = registrations.filter(status=VanRegistration.PENDING_SIGNATURE)
     totals = {
         'total': registrations.count(),
         'signed': registrations.filter(status=VanRegistration.SIGNED_RECEIVED).count(),
-        'pending': registrations.filter(status=VanRegistration.PENDING_SIGNATURE).count(),
+        'pending': pending_registrations.count(),
         'remaining_slots': van_registration_remaining_slots(),
-        'limit': VAN_REGISTRATION_LIMIT,
+        'limit': settings.capacity,
     }
     return render(
         request,
         'inscricao_van/admin_dashboard.html',
-        {'registrations': registrations, 'totals': totals},
+        {
+            'capacity_form': VanSettingsForm(instance=settings),
+            'pending_registrations': pending_registrations,
+            'registrations': registrations,
+            'totals': totals,
+        },
     )
+
+
+@require_POST
+def van_admin_update_capacity(request):
+    require_van_admin(request)
+    settings = van_settings()
+    form = VanSettingsForm(request.POST, instance=settings)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Quantidade de vagas da van atualizada.')
+    else:
+        messages.error(request, 'Nao foi possivel atualizar a quantidade de vagas.')
+    return redirect('van_admin_dashboard')
 
 
 def term_admin_dashboard(request):

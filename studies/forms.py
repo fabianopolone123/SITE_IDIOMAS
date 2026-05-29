@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
 from .formatters import validate_cpf_digits, validate_phone_digits
-from .models import ImageAuthorization, Profile, VanRegistration
+from .models import ImageAuthorization, Profile, VanRegistration, VanSettings
 
 
 class RegisterForm(forms.Form):
@@ -131,6 +131,22 @@ class VanSignedTermForm(forms.ModelForm):
         if file.size > 10 * 1024 * 1024:
             raise forms.ValidationError('O arquivo deve ter no máximo 10 MB.')
         return file
+
+
+class VanSettingsForm(forms.ModelForm):
+    class Meta:
+        model = VanSettings
+        fields = ['capacity']
+        labels = {'capacity': 'Quantidade de vagas'}
+        widgets = {
+            'capacity': forms.NumberInput(attrs={'min': 1}),
+        }
+
+    def clean_capacity(self):
+        capacity = self.cleaned_data['capacity']
+        if capacity < 1:
+            raise forms.ValidationError('Informe pelo menos 1 vaga.')
+        return capacity
 
 
 class ImageAuthorizationForm(forms.ModelForm):

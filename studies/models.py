@@ -173,6 +173,23 @@ class VanRegistration(models.Model):
         return f'{self.minor_name} - {self.responsible_name}'
 
 
+class VanSettings(models.Model):
+    capacity = models.PositiveIntegerField('quantidade de vagas', default=17)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'configuracao da van'
+        verbose_name_plural = 'configuracoes da van'
+
+    @classmethod
+    def load(cls):
+        settings, _created = cls.objects.get_or_create(pk=1, defaults={'capacity': 17})
+        return settings
+
+    def __str__(self):
+        return f'{self.capacity} vagas'
+
+
 class ImageAuthorization(models.Model):
     PENDING_SIGNATURE = 'pending_signature'
     SIGNED_RECEIVED = 'signed_received'

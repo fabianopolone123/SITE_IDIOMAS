@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from .alice_deck import ALICE_CARDS, iter_alice_cards
 from .tech_deck import iter_tech_cards
-from .models import ImageAuthorization, Profile, ReviewState, StudyPhrase, VanRegistration
+from .models import ImageAuthorization, Profile, ReviewState, StudyPhrase, VanRegistration, VanSettings
 from .views import NEW_CARDS_BLOCK_SIZE, VAN_REGISTRATION_LIMIT
 
 
@@ -281,6 +281,24 @@ class VanRegistrationTests(TestCase):
         self.assertContains(response, '<strong>0</strong>', html=True)
         self.assertContains(response, 'As 17 vagas da van ja foram preenchidas')
 
+    def test_van_registration_uses_admin_capacity_setting(self):
+        VanSettings.load().save()
+        settings = VanSettings.load()
+        settings.capacity = 2
+        settings.save()
+        for index in range(2):
+            payload = self.registration_payload()
+            payload['responsible_cpf'] = f'700000000{index:02d}'
+            payload['minor_name'] = f'Adolescente limite {index}'
+            payload['minor_birth_date'] = f'2009-07-{index + 1:02d}'
+            VanRegistration.objects.create(**payload)
+
+        response = self.client.post(reverse('van_register'), self.registration_payload(), follow=True)
+
+        self.assertEqual(VanRegistration.objects.count(), 2)
+        self.assertContains(response, 'As 2 vagas da van ja foram preenchidas')
+        self.assertContains(response, '2 inscri')
+
     def test_van_registration_reuses_pending_record_even_when_limit_is_reached(self):
         existing = VanRegistration.objects.create(**self.registration_payload())
         for index in range(VAN_REGISTRATION_LIMIT - 1):
@@ -400,6 +418,35 @@ class VanRegistrationTests(TestCase):
         self.assertContains(choice_response, 'Dashboard da van')
         self.assertContains(choice_response, 'Dashboard dos termos')
         self.assertContains(dashboard_response, 'Adolescente Teste')
+        self.assertContains(dashboard_response, 'Quantidade de vagas')
+        self.assertContains(dashboard_response, 'Faltam enviar termo')
+
+    def test_van_admin_can_update_capacity(self):
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+
+        response = self.client.post(reverse('van_admin_update_capacity'), {'capacity': 22}, follow=True)
+
+        self.assertRedirects(response, reverse('van_admin_dashboard'))
+        self.assertEqual(VanSettings.load().capacity, 22)
+        self.assertContains(response, 'Quantidade de vagas da van atualizada')
+        self.assertContains(response, 'Vagas restantes de 22')
+
+    def test_van_admin_dashboard_lists_pending_signed_terms(self):
+        pending = VanRegistration.objects.create(**self.registration_payload())
+        signed_payload = self.registration_payload()
+        signed_payload['responsible_cpf'] = '99988877766'
+        signed_payload['minor_name'] = 'Adolescente Assinado'
+        signed_payload['minor_birth_date'] = '2010-06-10'
+        signed = VanRegistration.objects.create(**signed_payload)
+        upload = SimpleUploadedFile('termo.pdf', b'%PDF-1.4 teste', content_type='application/pdf')
+        signed.signed_term.save('termo.pdf', upload, save=True)
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.get(reverse('van_admin_dashboard'))
+
+        self.assertContains(response, 'Faltam enviar termo assinado')
+        self.assertContains(response, pending.minor_name)
+        self.assertNotContains(response, 'Adolescente Assinado</strong>')
 
     def test_van_admin_can_reject_signed_term_and_restore_pending_upload(self):
         registration = VanRegistration.objects.create(**self.registration_payload())

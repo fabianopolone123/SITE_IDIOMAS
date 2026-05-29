@@ -362,6 +362,25 @@ input:focus {
     margin-bottom: 18px;
 }
 
+.van-admin-settings {
+    background: white;
+    border: 1px solid var(--van-line);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    padding: 16px;
+}
+
+.van-capacity-form {
+    align-items: end;
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) auto;
+    gap: 12px;
+}
+
+.van-capacity-form label {
+    margin: 0;
+}
+
 .van-metrics article {
     background: white;
     border: 1px solid var(--van-line);
@@ -468,6 +487,27 @@ input:focus {
     margin: 0;
 }
 
+.van-pending-list {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+}
+
+.van-pending-list li {
+    border: 1px solid var(--van-line);
+    border-radius: 8px;
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+}
+
+.van-pending-list span {
+    color: var(--van-muted);
+    line-height: 1.45;
+}
+
 @media (max-width: 760px) {
     .van-hero {
         min-height: auto;
@@ -481,7 +521,8 @@ input:focus {
     .van-hero-content,
     .van-grid,
     .van-form.consult,
-    .van-metrics {
+    .van-metrics,
+    .van-capacity-form {
         grid-template-columns: 1fr;
     }
 
