@@ -166,6 +166,7 @@ Rotas:
 - `/inscricao_van/admin/`: login simples com senha `1580`.
 - `/inscricao_van/admin/dashboard/`: relatorio de inscricoes.
 - `/inscricao_van/admin/termos.zip`: baixa todos os termos assinados.
+- O dashboard da van tem uma janela "Telefones pendentes" com responsaveis que ainda nao enviaram o termo assinado e permite marcar/desmarcar quem ja foi avisado.
 
 O PDF e gerado com ReportLab em `studies/van_pdf.py`.
 

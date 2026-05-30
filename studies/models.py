@@ -131,6 +131,7 @@ class VanRegistration(models.Model):
     transport_by = models.CharField('transporte realizado por', max_length=120, default='van')
     signed_term = models.FileField('termo assinado', upload_to=van_signed_term_upload_path, blank=True)
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=PENDING_SIGNATURE, db_index=True)
+    signed_term_reminder_sent_at = models.DateTimeField('responsavel avisado sobre termo', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

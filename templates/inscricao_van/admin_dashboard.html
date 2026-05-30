@@ -10,7 +10,7 @@
             <h1>Dashboard da van</h1>
         </div>
         <div class="van-actions">
-            <button class="van-button secondary" type="button" data-modal-open="pending-docs-modal">Faltam enviar termo</button>
+            <button class="van-button secondary" type="button" data-modal-open="pending-docs-modal">Telefones pendentes</button>
             <a class="van-button secondary" href="{% url 'van_admin_download_all' %}">Baixar todos termos</a>
             <a class="van-button ghost" href="{% url 'van_admin_choice' %}">Trocar dashboard</a>
             <a class="van-button ghost" href="{% url 'van_admin_logout' %}">Sair</a>
@@ -101,14 +101,33 @@
     </section>
 
     <dialog class="van-dialog" id="pending-docs-modal">
-        <h2>Faltam enviar termo assinado</h2>
+        <h2>Telefones de quem falta enviar termo</h2>
         {% if pending_registrations %}
             <ul class="van-pending-list">
                 {% for item in pending_registrations %}
                     <li>
-                        <strong>{{ item.minor_name }}</strong>
-                        <span>{{ item.responsible_name }} - {{ item.responsible_phone_formatted|default:'telefone nao informado' }}</span>
-                        <button class="van-link" type="button" data-modal-switch="modal-{{ item.id }}">Ver resumo</button>
+                        <div>
+                            <strong>{{ item.minor_name }}</strong>
+                            <span>{{ item.responsible_name }}</span>
+                            <span>WhatsApp: {{ item.responsible_phone_formatted|default:'telefone nao informado' }}</span>
+                            {% if item.responsible_phone_alt_formatted %}
+                                <span>Alternativo: {{ item.responsible_phone_alt_formatted }}</span>
+                            {% endif %}
+                            {% if item.signed_term_reminder_sent_at %}
+                                <span class="van-reminder-done">Avisado em {{ item.signed_term_reminder_sent_at|date:'d/m/Y H:i' }}</span>
+                            {% else %}
+                                <span class="van-reminder-open">Ainda nao avisado</span>
+                            {% endif %}
+                        </div>
+                        <div class="van-pending-actions">
+                            <form class="van-inline-form" method="post" action="{% url 'van_admin_toggle_term_reminder' item.public_id %}">
+                                {% csrf_token %}
+                                <button class="van-button secondary" type="submit">
+                                    {% if item.signed_term_reminder_sent_at %}Desmarcar{% else %}Ticar avisado{% endif %}
+                                </button>
+                            </form>
+                            <button class="van-link" type="button" data-modal-switch="modal-{{ item.id }}">Ver resumo</button>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>

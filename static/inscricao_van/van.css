@@ -547,16 +547,37 @@ input:focus {
 }
 
 .van-pending-list li {
+    align-items: center;
     border: 1px solid var(--van-line);
     border-radius: 8px;
     display: grid;
-    gap: 4px;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 12px;
 }
 
 .van-pending-list span {
     color: var(--van-muted);
+    display: block;
     line-height: 1.45;
+}
+
+.van-pending-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.van-pending-list .van-reminder-done {
+    color: var(--van-ok);
+    font-weight: 850;
+}
+
+.van-pending-list .van-reminder-open {
+    color: var(--van-warn);
+    font-weight: 850;
 }
 
 @media (max-width: 760px) {
@@ -579,6 +600,14 @@ input:focus {
     }
 
     .van-copy-actions {
+        justify-content: flex-start;
+    }
+
+    .van-pending-list li {
+        grid-template-columns: 1fr;
+    }
+
+    .van-pending-actions {
         justify-content: flex-start;
     }
 

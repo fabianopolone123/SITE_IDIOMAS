@@ -666,11 +666,30 @@ def van_admin_reject_signed(request, public_id):
     if registration.signed_term:
         registration.signed_term.delete(save=False)
     registration.status = VanRegistration.PENDING_SIGNATURE
-    registration.save(update_fields=['signed_term', 'status', 'updated_at'])
+    registration.signed_term_reminder_sent_at = None
+    registration.save(update_fields=['signed_term', 'status', 'signed_term_reminder_sent_at', 'updated_at'])
     messages.success(
         request,
         'Termo assinado desaprovado. A inscricao voltou para pendente de envio.',
     )
+    return redirect('van_admin_dashboard')
+
+
+@require_POST
+def van_admin_toggle_term_reminder(request, public_id):
+    require_van_admin(request)
+    registration = get_object_or_404(
+        VanRegistration,
+        public_id=public_id,
+        status=VanRegistration.PENDING_SIGNATURE,
+    )
+    if registration.signed_term_reminder_sent_at:
+        registration.signed_term_reminder_sent_at = None
+        messages.success(request, f'Aviso de {registration.responsible_name} desmarcado.')
+    else:
+        registration.signed_term_reminder_sent_at = timezone.now()
+        messages.success(request, f'{registration.responsible_name} marcado como avisado.')
+    registration.save(update_fields=['signed_term_reminder_sent_at', 'updated_at'])
     return redirect('van_admin_dashboard')
 
 

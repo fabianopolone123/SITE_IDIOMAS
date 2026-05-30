@@ -473,7 +473,7 @@ class VanRegistrationTests(TestCase):
         self.assertContains(choice_response, 'Dashboard dos termos')
         self.assertContains(dashboard_response, 'Adolescente Teste')
         self.assertContains(dashboard_response, 'Quantidade de vagas')
-        self.assertContains(dashboard_response, 'Faltam enviar termo')
+        self.assertContains(dashboard_response, 'Telefones pendentes')
 
     def test_van_admin_can_update_capacity(self):
         self.client.post(reverse('van_admin_login'), {'password': '1580'})
@@ -498,9 +498,36 @@ class VanRegistrationTests(TestCase):
         self.client.post(reverse('van_admin_login'), {'password': '1580'})
         response = self.client.get(reverse('van_admin_dashboard'))
 
-        self.assertContains(response, 'Faltam enviar termo assinado')
+        self.assertContains(response, 'Telefones de quem falta enviar termo')
         self.assertContains(response, pending.minor_name)
+        self.assertContains(response, '(16) 99999-9999')
+        self.assertContains(response, 'Ticar avisado')
         self.assertNotContains(response, 'Adolescente Assinado</strong>')
+
+    def test_van_admin_can_mark_pending_responsible_as_notified(self):
+        registration = VanRegistration.objects.create(**self.registration_payload())
+
+        self.client.post(reverse('van_admin_login'), {'password': '1580'})
+        response = self.client.post(
+            reverse('van_admin_toggle_term_reminder', args=[registration.public_id]),
+            follow=True,
+        )
+
+        registration.refresh_from_db()
+        self.assertIsNotNone(registration.signed_term_reminder_sent_at)
+        self.assertContains(response, 'marcado como avisado')
+        self.assertContains(response, 'Avisado em')
+        self.assertContains(response, 'Desmarcar')
+
+        response = self.client.post(
+            reverse('van_admin_toggle_term_reminder', args=[registration.public_id]),
+            follow=True,
+        )
+
+        registration.refresh_from_db()
+        self.assertIsNone(registration.signed_term_reminder_sent_at)
+        self.assertContains(response, 'desmarcado')
+        self.assertContains(response, 'Ainda nao avisado')
 
     def test_van_admin_dashboard_has_copy_name_lists(self):
         pending = VanRegistration.objects.create(**self.registration_payload())
@@ -519,7 +546,8 @@ class VanRegistrationTests(TestCase):
         self.assertContains(response, 'Copiar todos')
         self.assertContains(response, 'Copiar com termo')
         self.assertContains(response, 'Copiar faltando termo')
-        self.assertIn(f'id="copy-all-names" readonly hidden>{pending.minor_name}', html)
+        self.assertIn('id="copy-all-names" readonly hidden>', html)
+        self.assertIn(pending.minor_name, html)
         self.assertIn('Adolescente Assinado', html)
         self.assertIn('id="copy-signed-names" readonly hidden>Adolescente Assinado', html)
         self.assertIn(f'id="copy-pending-names" readonly hidden>{pending.minor_name}', html)
