@@ -544,9 +544,12 @@ class VanRegistrationTests(TestCase):
         html = response.content.decode()
 
         self.assertContains(response, 'Copiar todos')
+        self.assertContains(response, 'Copiar todos + telefone')
         self.assertContains(response, 'Copiar com termo')
         self.assertContains(response, 'Copiar faltando termo')
         self.assertIn('id="copy-all-names" readonly hidden>', html)
+        self.assertIn('id="copy-all-names-phones" readonly hidden>', html)
+        self.assertIn(f'{pending.minor_name} - Responsavel Teste - (16) 99999-9999', html)
         self.assertIn(pending.minor_name, html)
         self.assertIn('Adolescente Assinado', html)
         self.assertIn('id="copy-signed-names" readonly hidden>Adolescente Assinado', html)

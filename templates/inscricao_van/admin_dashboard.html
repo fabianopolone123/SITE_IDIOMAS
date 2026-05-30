@@ -40,11 +40,14 @@
         </div>
         <div class="van-copy-actions">
             <button class="van-button secondary" type="button" data-copy-target="copy-all-names">Copiar todos</button>
+            <button class="van-button secondary" type="button" data-copy-target="copy-all-names-phones">Copiar todos + telefone</button>
             <button class="van-button secondary" type="button" data-copy-target="copy-signed-names">Copiar com termo</button>
             <button class="van-button secondary" type="button" data-copy-target="copy-pending-names">Copiar faltando termo</button>
         </div>
         <p class="van-copy-status" data-copy-status></p>
         <textarea class="van-copy-source" id="copy-all-names" readonly hidden>{% for item in registrations %}{{ item.minor_name }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+        <textarea class="van-copy-source" id="copy-all-names-phones" readonly hidden>{% for item in registrations %}{{ item.minor_name }} - {{ item.responsible_name }} - {{ item.responsible_phone_formatted|default:'telefone nao informado' }}{% if not forloop.last %}
 {% endif %}{% endfor %}</textarea>
         <textarea class="van-copy-source" id="copy-signed-names" readonly hidden>{% for item in signed_registrations %}{{ item.minor_name }}{% if not forloop.last %}
 {% endif %}{% endfor %}</textarea>
